@@ -14,4 +14,10 @@ health_platform.db
 venv/
 *.egg-info/
 .pytest_cache/
+model_storage/
+*.safetensors
+*.pth
+*.h5
+*.bin
+*.tflite
 "@ | Out-File .gitignore -Encoding utf8

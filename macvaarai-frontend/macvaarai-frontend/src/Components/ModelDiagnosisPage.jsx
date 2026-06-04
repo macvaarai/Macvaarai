@@ -3,10 +3,12 @@ import { Upload, ArrowLeft, Loader } from "lucide-react";
 
 const ModelDiagnosisPage = ({ modelId, modelName, onBack, hospitalId, adminData, apiUrl }) => {
   const [selectedFile, setSelectedFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [inputMode, setInputMode] = useState("file"); // "file" or "url"
   const fileInputRef = useRef(null);
 
   const MODEL_CONFIG = {
@@ -153,6 +155,7 @@ const ModelDiagnosisPage = ({ modelId, modelName, onBack, hospitalId, adminData,
 
   const handleClear = () => {
     setSelectedFile(null);
+    setImageUrl("");
     setPreview(null);
     setResult(null);
     setError(null);
@@ -186,7 +189,66 @@ const ModelDiagnosisPage = ({ modelId, modelName, onBack, hospitalId, adminData,
               <h2 className="text-2xl font-bold mb-4">📤 Upload Image</h2>
               <p className="text-gray-400 mb-6">{config.description}</p>
 
-              {/* File Input Area */}
+              {/* Input Mode Toggle */}
+              <div className="flex gap-2 mb-6">
+                <button
+                  onClick={() => {
+                    setInputMode("file");
+                    setImageUrl("");
+                    setPreview(null);
+                  }}
+                  className={`px-4 py-2 rounded-lg font-semibold transition ${
+                    inputMode === "file"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                  }`}
+                >
+                  📁 Upload File
+                </button>
+                <button
+                  onClick={() => {
+                    setInputMode("url");
+                    setSelectedFile(null);
+                    setPreview(null);
+                  }}
+                  className={`px-4 py-2 rounded-lg font-semibold transition ${
+                    inputMode === "url"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                  }`}
+                >
+                  🔗 From URL
+                </button>
+              </div>
+
+              {/* URL Input Mode */}
+              {inputMode === "url" && (
+                <div className="mb-6 space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Paste image URL from Medwad device (e.g., https://...)"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none text-white placeholder-gray-500"
+                  />
+                  <button
+                    onClick={() => {
+                      if (imageUrl.trim()) {
+                        setPreview(imageUrl);
+                      } else {
+                        setError("Please enter a valid URL");
+                      }
+                    }}
+                    className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition"
+                  >
+                    Load Image from URL
+                  </button>
+                  <p className="text-xs text-gray-400">Paste URL from your Medwad device here</p>
+                </div>
+              )}
+
+              {/* File Input Area - Only show in file mode */}
+              {inputMode === "file" && (
               <div
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={handleDragOver}
@@ -220,6 +282,7 @@ const ModelDiagnosisPage = ({ modelId, modelName, onBack, hospitalId, adminData,
                   className="hidden"
                 />
               </div>
+              )}
 
               {/* Preview */}
               {preview && (
@@ -235,9 +298,9 @@ const ModelDiagnosisPage = ({ modelId, modelName, onBack, hospitalId, adminData,
                   <>
                     <button
                       onClick={handleUploadAndAnalyze}
-                      disabled={!selectedFile || loading}
+                      disabled={(inputMode === "file" && !selectedFile) || (inputMode === "url" && !preview) || loading}
                       className={`flex-1 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition ${
-                        loading || !selectedFile
+                        loading || (inputMode === "file" && !selectedFile) || (inputMode === "url" && !preview)
                           ? "bg-gray-700 text-gray-400 cursor-not-allowed"
                           : "bg-green-600 hover:bg-green-700 text-white"
                       }`}

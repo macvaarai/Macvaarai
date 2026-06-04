@@ -1,0 +1,46 @@
+# Model files - too large for GitHub
+model_storage/
+macvaarai-backend/model_storage/
+*.safetensors
+*.pth
+*.h5
+*.bin
+*.tflite
+*.keras
+*.pkl
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+uploads/
+health_platform.db
+*.log
+.coverage
+htmlcov/
