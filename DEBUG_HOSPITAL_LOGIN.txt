@@ -1,0 +1,94 @@
+DEBUG: HOSPITAL LOGIN ERROR - Step by Step
+============================================
+
+STEPS TO DEBUG:
+---------------
+
+1. OPEN BROWSER DEVELOPER TOOLS
+   - Press: F12
+   - Go to: Console tab
+   - Clear console (clear all messages)
+
+2. RESTART BACKEND
+   - Close backend (Ctrl+C if running)
+   - Double-click: START_BACKEND.bat
+   - Wait for: "Uvicorn running on http://127.0.0.1:8000"
+   - ✅ Watch backend console for debug messages
+
+3. REFRESH FRONTEND
+   - Go to: http://localhost:5173
+   - Press: Ctrl+Shift+R (hard refresh)
+   - Frontend console should be clear
+
+4. CREATE A NEW HOSPITAL (Super Admin)
+   - Login: hero_admin_001
+   - Click "Add Hospital"
+   - Fill in all fields:
+     * Name: "Debug Hospital"
+     * Admin: "Dr. Debug"
+     * Email: debug@hospital.com
+     * Phone: +91-9999999999
+     * Address: 123 Debug Rd
+     * City: Mumbai
+     * State: Maharashtra
+     * ZIP: 400001
+     * Doctors: 50
+     * Beds: 200
+   - Select at least 1 model
+   - Click "Create Hospital"
+   - ✅ Get the token from alert
+
+5. COPY THE TOKEN
+   - From alert popup
+   - Example: HSP-XXXXX_TOKEN_YYYYY...
+
+6. LOGOUT FROM SUPER ADMIN
+   - Click logout button
+
+7. GO TO HOSPITAL LOGIN
+   - URL: http://localhost:5173/hospital/login
+
+8. PASTE TOKEN AND LOGIN
+   - Paste token in input field
+   - Click "Access Hospital Portal"
+   - ✅ WATCH CONSOLE for messages
+
+WHAT TO LOOK FOR IN BROWSER CONSOLE (F12):
+-------------------------------------------
+
+After clicking "Access Hospital Portal", you should see:
+
+✅ "[DEBUG] Verifying token: HSP-..." in BACKEND console
+✅ "Hospital data received:" in FRONTEND console
+✅ "localStorage set with hospital ID:" in FRONTEND console
+
+If you see these, hospital data is being stored.
+
+Then check FRONTEND console:
+✅ "LocalStorage Hospital Data:" - shows all hospital details
+✅ "Using localStorage data" - means it's using the data
+
+WHAT TO SHARE WITH ME:
+----------------------
+
+Please tell me what you see in:
+
+1. Backend Console (START_BACKEND.bat window):
+   - Any "[DEBUG]" messages?
+   - Any errors?
+
+2. Frontend Console (F12 → Console tab):
+   - Do you see "Hospital data received:"?
+   - Do you see "localStorage set with hospital ID:"?
+   - Do you see "LocalStorage Hospital Data:" with data?
+
+3. The hospital token that was generated:
+   - Copy-paste the token from the alert
+
+4. Current error message on screen:
+   - Still "Hospital data not found"?
+   - Or something different?
+
+5. Screenshot of browser console (optional)
+
+This information will help identify exactly where the issue is!

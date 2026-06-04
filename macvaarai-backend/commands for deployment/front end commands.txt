@@ -1,0 +1,16 @@
+icacls "C:\BHAI\frontend.pem" /inheritance:r
+icacls "C:\BHAI\frontend.pem" /grant:r "$($env:USERNAME):(R)"
+
+
+ssh -i "C:\BHAI\frontend.pem" ubuntu@18.188.136.49
+
+
+
+cd ~/macvaarai-frontend
+sudo chown -R ubuntu:ubuntu ~/macvaarai-frontend/dist
+sudo chmod -R 755 ~/macvaarai-frontend/dist
+rm -rf ~/macvaarai-frontend/dist
+npm run build
+sudo chown -R www-data:www-data ~/macvaarai-frontend/dist
+sudo chmod -R 755 ~/macvaarai-frontend/dist
+sudo systemctl reload nginx

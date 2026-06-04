@@ -1,0 +1,42 @@
+AWS account and email credentials
+ macvaarai@gmail.com
+ SSashi@2025
+ Iam AWS creds
+ acc : 017166048193
+ username: bhaidevops
+ Password: SSashi_2025
+ Fast api/callback url(medwand calling to backend): 
+https://macvaarai.com/api/v1/aidev/results
+
+EC2
+Security Groups
+sg-0c592f24bd4ea1495 - launch-wizard-8
+Edit inbound rules ssh key ,(myip)
+
+first power shell
+pem file permission
+icacls "C:\macvaar\aiinmaruthuvam.pem" /inheritance:r
+icacls "C:\macvaar\aiinmaruthuvam.pem" /grant:r "$($env:USERNAME):(R)"
+
+second powershell
+from local powershell to add any model_storage(if we already have with that name then change file name)
+ scp -i C:\macvaar\aiinmaruthuvam.pem C:\macvaar\macvaarai-backend\model_storage\ear_model.pth ubuntu@3.19.26.52:~/macvaarlabAPIFinal/macvaarlabAPIFinal/model_storage(giving path from local)
+if we need to change code change here(ctrl o(save) ctrl k(delete) )
+if we need to change any we need to nano command i.e nano main.py
+to print the code on powershell we need to use cat main.py
+
+
+
+To login into server
+ssh -i "C:\macvaar\aiinmaruthuvam.pem" ubuntu@3.19.26.52
+cd  macvaarlabAPIFinal/ macvaarlabAPIFinal
+to activate venv(optinal when we need to install new installations)
+source venv/bin/activate
+
+
+
+after updatuing everything to rerun with new code
+pkill -9 -f "uvicorn"
+pkill -9 -f "node"
+nohup venv/bin/uvicorn main:app   --host 0.0.0.0   --port 8000   --timeout-keep-alive 600 > output.log 2>&1 &
+tail -f output.log

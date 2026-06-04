@@ -1,0 +1,24 @@
+# 1️⃣ Go to frontend folder
+cd C:\BHAI\macvaarai-frontend
+
+# 2️⃣ Install all dependencies (only the first time)
+npm install
+
+# 3️⃣ Start the frontend development server
+npm run dev
+
+
+
+
+Backend
+# 1️⃣ Go to backend folder
+cd C:\BHAI\macvaarai-backend
+
+# 2️⃣ Activate virtual environment
+venv\Scripts\activate
+
+# 3️⃣ Install Python dependencies (only once)
+pip install -r requirements.txt
+
+# 4️⃣ Run backend server with auto-reload
+uvicorn main:app --reload 

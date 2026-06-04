@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-[#131314] text-white;
+}
+
+.auto-resize-textarea {
+  @apply w-full resize-none overflow-hidden bg-transparent text-white placeholder-gray-400 outline-none;
+}
+
+.input-action-button {
+  @apply flex items-center gap-1 p-2 rounded-lg hover:bg-gray-700 transition;
+}
+
+.input-action-button.selected {
+  @apply bg-gray-600;
+}
