@@ -26,10 +26,10 @@ const HospitalAdminDashboard = ({ onLogout, adminData }) => {
     { id: "covid", name: "COVID-19 Detection", premium: true },
     { id: "ecg", name: "ECG Analysis", premium: true },
     { id: "skin", name: "Skin Cancer Detection", premium: true },
-    { id: "diabetes", name: "Diabetes Detection", premium: false },
-    { id: "pneumonia", name: "Pneumonia Detection", premium: false },
-    { id: "malaria", name: "Malaria Detection", premium: false },
-    { id: "dengue", name: "Dengue Detection", premium: false },
+    { id: "diabetes", name: "Diabetes Detection", premium: true },
+    { id: "pneumonia", name: "Pneumonia Detection", premium: true },
+    { id: "malaria", name: "Malaria Detection", premium: true },
+    { id: "dengue", name: "Dengue Detection", premium: true },
   ];
 
   // Demo data

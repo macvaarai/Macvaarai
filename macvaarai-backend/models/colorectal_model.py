@@ -109,3 +109,15 @@ def classify_tissue(image: Image.Image) -> dict:
         "raw_response": response,
         "summary": f"Prediction: {label_info['label']} ({label_info['confidence'] * 100:.1f}%)"
     }
+
+def predict_colorectal(image_bytes):
+    """Wrapper function for colorectal tissue classification"""
+    try:
+        from io import BytesIO
+        image = Image.open(BytesIO(image_bytes))
+        if processor is None or model is None:
+            initialize_model()
+        result = classify_tissue(image)
+        return result
+    except Exception as e:
+        return {"label": "Error", "confidence": 0, "summary": f"Error: {str(e)}"}

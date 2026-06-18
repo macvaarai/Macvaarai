@@ -2,8 +2,21 @@ import io
 import torch
 from PIL import Image
 from utils.preprocess import convert_to_json
-from models.diabetes_model import predict_diabetes_from_json
-from models.dengue_model import predict_dengue_from_json
+
+# Import model predictors with graceful fallback if models are missing
+try:
+    from models.diabetes_model import predict_diabetes_from_json
+except Exception as e:
+    print(f"[WARNING] Could not import diabetes model: {e}")
+    def predict_diabetes_from_json(file_bytes):
+        return {"label": "unavailable", "confidence": 0.0, "summary": "Model not loaded"}
+
+try:
+    from models.dengue_model import predict_dengue_from_json
+except Exception as e:
+    print(f"[WARNING] Could not import dengue model: {e}")
+    def predict_dengue_from_json(file_bytes):
+        return {"label": "unavailable", "confidence": 0.0, "summary": "Model not loaded"}
 
 # Optional: HEIC support
 try:

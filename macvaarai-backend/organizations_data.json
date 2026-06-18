@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Vijay Care",
+    "slug": "vijay-care",
+    "email": "admin@vijaycare.com",
+    "phone": "+91-98765-43210",
+    "address": "123 Healthcare Lane",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "zip_code": "600001",
+    "num_hospitals": 3,
+    "logo": "vijay-logo.png",
+    "subscribed_models": ["eye", "covid", "diabetes", "pneumonia"]
+  },
+  {
+    "name": "COVID Response Team",
+    "slug": "covid-response",
+    "email": "admin@covidresponse.com",
+    "phone": "+91-97654-32109",
+    "address": "456 Medical Plaza",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "zip_code": "600002",
+    "num_hospitals": 5,
+    "logo": "covid-logo.png",
+    "subscribed_models": ["covid", "pneumonia", "tb", "malaria"]
+  },
+  {
+    "name": "Diagnostic Excellence",
+    "slug": "diagnostic-excellence",
+    "email": "admin@diagnostic.com",
+    "phone": "+91-96543-21098",
+    "address": "789 Wellness Center",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "zip_code": "600003",
+    "num_hospitals": 2,
+    "logo": "diagnostic-logo.png",
+    "subscribed_models": ["eye", "covid", "pneumonia", "malaria", "diabetes", "dengue", "skin"]
+  },
+  {
+    "name": "Premier Healthcare Network",
+    "slug": "premier-healthcare",
+    "email": "admin@premierhealthcare.com",
+    "phone": "+91-95432-10987",
+    "address": "999 Medical Complex",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "zip_code": "600004",
+    "num_hospitals": 8,
+    "logo": "premier-logo.png",
+    "subscribed_models": ["covid", "eye", "pneumonia", "tb", "malaria", "dengue", "diabetes", "kidney", "throat", "lung", "skin", "ecg", "stroke", "colorectal", "ear", "nose", "oral", "pharyngitis"]
+  }
+]

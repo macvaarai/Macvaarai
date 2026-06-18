@@ -29,6 +29,12 @@ const HospitalAdminPortal = ({ onLogout, adminData }) => {
     gender: "Male",
     address: "",
   });
+  const [showAddAdminModal, setShowAddAdminModal] = useState(false);
+  const [newAdminForm, setNewAdminForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
   const [feedbackForm, setFeedbackForm] = useState({
     subject: "",
     type: "suggestion",
@@ -48,18 +54,18 @@ const HospitalAdminPortal = ({ onLogout, adminData }) => {
 
   // All 12 AI models with pricing
   const allModels = [
-    { id: "eye", name: "Eye Disease Detection", price: 5000, category: "Premium" },
-    { id: "covid", name: "COVID-19 Detection", price: 5000, category: "Premium" },
-    { id: "ecg", name: "ECG Analysis", price: 5000, category: "Premium" },
-    { id: "skin", name: "Skin Cancer Detection", price: 5000, category: "Premium" },
-    { id: "breast", name: "Breast Cancer Detection", price: 5000, category: "Premium" },
-    { id: "tb", name: "Tuberculosis Detection", price: 5000, category: "Premium" },
-    { id: "diabetes", name: "Diabetes Detection", price: 0, category: "Free" },
-    { id: "pneumonia", name: "Pneumonia Detection", price: 0, category: "Free" },
-    { id: "malaria", name: "Malaria Detection", price: 0, category: "Free" },
-    { id: "dengue", name: "Dengue Detection", price: 0, category: "Free" },
-    { id: "stroke", name: "Stroke Prediction", price: 5000, category: "Premium" },
-    { id: "kidney", name: "Kidney Disease Detection", price: 0, category: "Free" },
+    { id: "eye", name: "Eye Disease Detection", price: "$$$$$", category: "Premium" },
+    { id: "covid", name: "COVID-19 Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "ecg", name: "ECG Analysis AI", price: "$$$$$", category: "Premium" },
+    { id: "skin", name: "Skin Cancer Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "breast", name: "Breast Cancer Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "tb", name: "Tuberculosis Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "diabetes", name: "Diabetes Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "pneumonia", name: "Pneumonia Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "malaria", name: "Malaria Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "dengue", name: "Dengue Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "stroke", name: "Stroke Prediction AI", price: "$$$$$", category: "Premium" },
+    { id: "kidney", name: "Kidney Disease Detection AI", price: "$$$$$", category: "Premium" },
   ];
 
   // Fetch hospital data on mount
@@ -96,6 +102,10 @@ const HospitalAdminPortal = ({ onLogout, adminData }) => {
       if (localHospitalData.hospital_id && localHospitalData.name) {
         console.log("✅ Using localStorage data:", localHospitalData);
         console.log("Subscribed models from localStorage:", localStorage.getItem("subscribedModels"));
+
+        // Add logo URL from localStorage
+        localHospitalData.logo_url = localStorage.getItem("hospitalLogoUrl") || null;
+
         setHospital(localHospitalData);
         setLoading(false);
         return;
@@ -424,18 +434,39 @@ const HospitalAdminPortal = ({ onLogout, adminData }) => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-start">
-          <div>
-            <h1 className="text-4xl font-bold">🏥 {hospital.name}</h1>
-            <p className="text-blue-200 mt-2">Hospital Admin Portal</p>
-            <div className="mt-4 space-y-1 text-sm">
-              <p>📧 {hospital.email}</p>
-              <p>📱 {hospital.phone}</p>
-              <p>📍 {hospital.city}, {hospital.state} {hospital.zip_code}</p>
+      {/* Header with Hospital Logo */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          {/* Logo + Hospital Info */}
+          <div className="flex items-center gap-6">
+            {/* Round Logo */}
+            <div className="flex-shrink-0">
+              {hospital?.logo_url ? (
+                <img
+                  src={hospital.logo_url}
+                  alt="Hospital Logo"
+                  className="h-20 w-20 rounded-full object-cover border-4 border-white shadow-lg"
+                />
+              ) : (
+                <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center text-4xl shadow-lg">
+                  🏥
+                </div>
+              )}
+            </div>
+
+            {/* Hospital Info */}
+            <div>
+              <h1 className="text-3xl font-bold text-white">{hospital.name}</h1>
+              <p className="text-blue-100 text-sm mt-1">Hospital Admin Portal</p>
+              <div className="mt-3 space-y-1 text-xs text-blue-100">
+                <p>📧 {hospital.email}</p>
+                <p>📱 {hospital.phone}</p>
+                <p>📍 {hospital.city}, {hospital.state} {hospital.zip_code}</p>
+              </div>
             </div>
           </div>
+
+          {/* Logout Button */}
           <button
             onClick={onLogout}
             className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg flex items-center gap-2 font-semibold"
@@ -492,49 +523,6 @@ const HospitalAdminPortal = ({ onLogout, adminData }) => {
                 <p className="text-gray-200 text-sm">Hospital Admins</p>
                 <p className="text-4xl font-bold mt-2">{stats.active_admins}</p>
                 <p className="text-xs text-orange-200 mt-2">Active in this hospital</p>
-              </div>
-            </div>
-
-            {/* Hospital Info Card */}
-            <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
-              <div className="flex items-center gap-4 mb-6">
-                {hospital.logo_url ? (
-                  <img src={hospital.logo_url} alt="Hospital Logo" className="h-16 w-16 object-contain" />
-                ) : (
-                  <div className="h-16 w-16 bg-blue-600 rounded flex items-center justify-center text-2xl">🏥</div>
-                )}
-                <h3 className="text-2xl font-bold">🏢 Hospital Information</h3>
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-gray-400 text-sm">Hospital ID</p>
-                  <p className="font-semibold text-lg">{hospital.hospital_id}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Primary Doctor</p>
-                  <p className="font-semibold text-lg">{hospital.admin_name}</p>
-                  <p className="text-sm text-gray-400">{hospital.admin_email}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Address</p>
-                  <p className="font-semibold">{hospital.address}</p>
-                  <p className="text-sm text-gray-400">{hospital.city}, {hospital.state} {hospital.zip_code}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Medical Staff</p>
-                  <p className="font-semibold text-lg">{localStorage.getItem("numDoctors") || hospital.num_doctors || 0} Doctors</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Hospital Capacity</p>
-                  <p className="font-semibold text-lg">{localStorage.getItem("numBeds") || hospital.num_beds || 0} Beds</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Subscribed Models</p>
-                  <p className="font-semibold text-lg">{getSubscribedModels().length} Models</p>
-                  <p className="text-sm text-gray-400">
-                    {getSubscribedModels().length === 4 ? "Premium (4)" : "Mixed"}
-                  </p>
-                </div>
               </div>
             </div>
           </div>
@@ -643,7 +631,9 @@ const HospitalAdminPortal = ({ onLogout, adminData }) => {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-3xl font-bold">👨‍💼 Hospital Admin Management</h2>
-              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg flex items-center gap-2 font-semibold">
+              <button
+                onClick={() => setShowAddAdminModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg flex items-center gap-2 font-semibold">
                 <Plus size={20} /> Add Admin
               </button>
             </div>
@@ -1037,6 +1027,86 @@ const HospitalAdminPortal = ({ onLogout, adminData }) => {
                   className="flex-1 bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded font-semibold flex items-center justify-center gap-2"
                 >
                   <ArrowLeft size={18} /> Back
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Admin Modal */}
+      {showAddAdminModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900 border border-gray-700 rounded-lg w-full max-w-md">
+            <div className="flex justify-between items-center p-6 border-b border-gray-700 bg-gray-800">
+              <h2 className="text-2xl font-bold">➕ Add New Admin</h2>
+              <button
+                onClick={() => setShowAddAdminModal(false)}
+                className="text-gray-400 hover:text-white text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (newAdminForm.name && newAdminForm.email) {
+                  alert("✅ Admin invitation sent to " + newAdminForm.email);
+                  setNewAdminForm({ name: "", email: "", phone: "" });
+                  setShowAddAdminModal(false);
+                }
+              }}
+              className="p-6 space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-semibold mb-2">Admin Name *</label>
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={newAdminForm.name}
+                  onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
+                  required
+                  className="w-full p-3 rounded bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">Email *</label>
+                <input
+                  type="email"
+                  placeholder="admin@hospital.com"
+                  value={newAdminForm.email}
+                  onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
+                  required
+                  className="w-full p-3 rounded bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">Phone</label>
+                <input
+                  type="tel"
+                  placeholder="+91-XXXXXXXXXX"
+                  value={newAdminForm.phone}
+                  onChange={(e) => setNewAdminForm({ ...newAdminForm, phone: e.target.value })}
+                  className="w-full p-3 rounded bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-gray-700">
+                <button
+                  type="submit"
+                  className="flex-1 bg-green-600 hover:bg-green-700 px-4 py-3 rounded font-semibold"
+                >
+                  Send Invitation
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddAdminModal(false)}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded font-semibold"
+                >
+                  Cancel
                 </button>
               </div>
             </form>

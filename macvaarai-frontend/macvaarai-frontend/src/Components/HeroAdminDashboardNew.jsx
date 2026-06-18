@@ -24,22 +24,31 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
   const [searchFeedback, setSearchFeedback] = useState("");
   const [searchConsultations, setSearchConsultations] = useState("");
 
+  // Analytics state
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [diseaseData, setDiseaseData] = useState(null);
+  const [vaccinationData, setVaccinationData] = useState(null);
+  const [staffData, setStaffData] = useState(null);
+  const [inventoryData, setInventoryData] = useState(null);
+  const [financeData, setFinanceData] = useState(null);
+  const [qualityData, setQualityData] = useState(null);
+
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   // Available models with pricing (12 total)
   const availableModels = [
-    { id: "eye", name: "Eye Disease Detection", category: "Premium", price: 5000 },
-    { id: "covid", name: "COVID-19 Detection", category: "Premium", price: 5000 },
-    { id: "ecg", name: "ECG Analysis", category: "Premium", price: 5000 },
-    { id: "skin", name: "Skin Cancer Detection", category: "Premium", price: 5000 },
-    { id: "breast", name: "Breast Cancer Detection", category: "Premium", price: 5000 },
-    { id: "tb", name: "Tuberculosis Detection", category: "Premium", price: 5000 },
-    { id: "diabetes", name: "Diabetes Detection", category: "Free", price: 0 },
-    { id: "pneumonia", name: "Pneumonia Detection", category: "Free", price: 0 },
-    { id: "malaria", name: "Malaria Detection", category: "Free", price: 0 },
-    { id: "dengue", name: "Dengue Detection", category: "Free", price: 0 },
-    { id: "stroke", name: "Stroke Prediction", category: "Premium", price: 5000 },
-    { id: "kidney", name: "Kidney Disease Detection", category: "Free", price: 0 },
+    { id: "eye", name: "Eye Disease Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "covid", name: "COVID-19 Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "ecg", name: "ECG Analysis AI", category: "Premium", price: "$$$$$" },
+    { id: "skin", name: "Skin Cancer Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "breast", name: "Breast Cancer Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "tb", name: "Tuberculosis Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "diabetes", name: "Diabetes Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "pneumonia", name: "Pneumonia Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "malaria", name: "Malaria Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "dengue", name: "Dengue Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "stroke", name: "Stroke Prediction AI", category: "Premium", price: "$$$$$" },
+    { id: "kidney", name: "Kidney Disease Detection AI", category: "Premium", price: "$$$$$" },
   ];
 
   // Form state
@@ -69,6 +78,7 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
     fetchSupportTickets();
     fetchFeedback();
     fetchConsultations();
+    fetchAnalyticsData();
   }, []);
 
   const fetchHospitals = async () => {
@@ -125,6 +135,31 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
       }
     } catch (err) {
       console.error("Error fetching consultations:", err);
+    }
+  };
+
+  // Fetch analytics data
+  const fetchAnalyticsData = async () => {
+    try {
+      const [analytics, diseases, vaccination, staff, inventory, finance, quality] = await Promise.all([
+        fetch(`${apiUrl}/admin/analytics/overview`).then(r => r.json()),
+        fetch(`${apiUrl}/admin/analytics/disease-surveillance`).then(r => r.json()),
+        fetch(`${apiUrl}/admin/analytics/vaccination`).then(r => r.json()),
+        fetch(`${apiUrl}/admin/analytics/staff`).then(r => r.json()),
+        fetch(`${apiUrl}/admin/analytics/inventory`).then(r => r.json()),
+        fetch(`${apiUrl}/admin/analytics/finance`).then(r => r.json()),
+        fetch(`${apiUrl}/admin/analytics/quality`).then(r => r.json()),
+      ]);
+
+      setAnalyticsData(analytics.data);
+      setDiseaseData(diseases.data);
+      setVaccinationData(vaccination.data);
+      setStaffData(staff.data);
+      setInventoryData(inventory.data);
+      setFinanceData(finance.data);
+      setQualityData(quality.data);
+    } catch (err) {
+      console.error("Error fetching analytics:", err);
     }
   };
 
@@ -365,6 +400,13 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
     { id: "overview", label: "Dashboard", icon: "📊" },
     { id: "hospitals", label: "Hospitals", icon: "🏥" },
     { id: "models", label: "Models & Pricing", icon: "💊" },
+    { id: "analytics", label: "Government Analytics", icon: "📈" },
+    { id: "surveillance", label: "Disease Surveillance", icon: "🦠" },
+    { id: "vaccination", label: "Vaccination Dashboard", icon: "💉" },
+    { id: "staff", label: "Staff Management", icon: "👨‍⚕️" },
+    { id: "inventory", label: "Inventory & Medicine", icon: "📦" },
+    { id: "finance", label: "Finance & Budget", icon: "💰" },
+    { id: "quality", label: "Quality & Compliance", icon: "✅" },
     { id: "support", label: "Support Tickets", icon: "🆘" },
     { id: "feedback", label: "Hospital Feedback", icon: "💬" },
     { id: "consultations", label: "Consultations", icon: "🤝" },
@@ -440,7 +482,7 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
               </div>
               <div>
                 <p className="text-gray-400">Total Model Cost (per hospital/year)</p>
-                <p className="text-white font-semibold">₹20,000 (for 4 premium models)</p>
+                <p className="text-white font-semibold">$$$$ (for premium models)</p>
               </div>
               <div>
                 <p className="text-gray-400">Status</p>
@@ -578,6 +620,343 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
       {/* MODELS & PRICING TAB */}
       {activeTab === "models" && (
         <ModelManagement apiUrl={apiUrl} />
+      )}
+
+      {/* GOVERNMENT ANALYTICS TAB */}
+      {activeTab === "analytics" && (
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold">📊 Government Health Analytics</h2>
+
+          {analyticsData ? (
+            <>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-lg">
+                  <p className="text-gray-200 text-sm">Total Population Served</p>
+                  <p className="text-3xl font-bold mt-2">{(analyticsData.population_served / 1000000).toFixed(1)}M</p>
+                  <p className="text-xs text-blue-200 mt-2">Tamil Nadu State</p>
+                </div>
+                <div className="bg-gradient-to-br from-green-600 to-green-800 p-6 rounded-lg">
+                  <p className="text-gray-200 text-sm">Healthcare Coverage</p>
+                  <p className="text-3xl font-bold mt-2">{analyticsData.healthcare_coverage}%</p>
+                  <p className="text-xs text-green-200 mt-2">Rural & Urban</p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-lg">
+                  <p className="text-gray-200 text-sm">Patient Recovery Rate</p>
+                  <p className="text-3xl font-bold mt-2">{analyticsData.patient_recovery_rate}%</p>
+                  <p className="text-xs text-purple-200 mt-2">Average Outcome</p>
+                </div>
+                <div className="bg-gradient-to-br from-orange-600 to-orange-800 p-6 rounded-lg">
+                  <p className="text-gray-200 text-sm">Mortality Rate</p>
+                  <p className="text-3xl font-bold mt-2">{analyticsData.mortality_rate}%</p>
+                  <p className="text-xs text-orange-200 mt-2">Below National Average</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+                <h3 className="text-xl font-bold mb-4">📈 Key Performance Indicators</h3>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-gray-400">Bed Occupancy Rate</p>
+                    <p className="text-2xl font-bold text-green-400">{analyticsData.bed_occupancy}%</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Staff Efficiency</p>
+                    <p className="text-2xl font-bold text-blue-400">{analyticsData.staff_efficiency}%</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Patient Satisfaction</p>
+                    <p className="text-2xl font-bold text-purple-400">{analyticsData.patient_satisfaction}%</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Budget Utilization</p>
+                    <p className="text-2xl font-bold text-orange-400">{analyticsData.budget_utilization}%</p>
+                  </div>
+                </div>
+              </div>
+
+              <button className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+                📊 Download Full Analytics Report (PDF)
+              </button>
+            </>
+          ) : (
+            <p className="text-gray-400">Loading analytics data...</p>
+          )}
+        </div>
+      )}
+
+      {/* DISEASE SURVEILLANCE TAB */}
+      {activeTab === "surveillance" && (
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold">🦠 Disease Surveillance</h2>
+
+          {diseaseData && diseaseData.diseases ? (
+            <>
+              <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+                <h3 className="text-xl font-bold mb-4">📊 Disease Distribution (Last 30 Days)</h3>
+                <div className="space-y-4">
+                  {Object.entries(diseaseData.diseases).map(([key, disease]) => {
+                    const maxCases = Math.max(...Object.values(diseaseData.diseases).map(d => d.cases));
+                    const percentage = (disease.cases / maxCases) * 100;
+                    return (
+                      <div key={key} className="flex items-center gap-4">
+                        <span className="w-32 text-gray-300">{disease.name}</span>
+                        <div className="flex-1 bg-gray-700 h-6 rounded">
+                          <div className={`bg-${disease.color}-500 h-6 rounded`} style={{width: `${percentage}%`}}></div>
+                        </div>
+                        <span className="text-sm font-bold">{disease.cases.toLocaleString()} cases</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                  <p className="text-gray-400 text-sm">Total Active Cases</p>
+                  <p className="text-3xl font-bold text-red-400">{diseaseData.summary.total_cases.toLocaleString()}</p>
+                </div>
+                <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                  <p className="text-gray-400 text-sm">Recovered This Month</p>
+                  <p className="text-3xl font-bold text-green-400">{diseaseData.summary.total_recovered.toLocaleString()}</p>
+                </div>
+                <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                  <p className="text-gray-400 text-sm">Recovery Rate</p>
+                  <p className="text-3xl font-bold text-orange-400">{diseaseData.summary.recovery_rate}%</p>
+                </div>
+              </div>
+
+              <button className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+                📥 Export Disease Surveillance Report
+              </button>
+            </>
+          ) : (
+            <p className="text-gray-400">Loading disease surveillance data...</p>
+          )}
+        </div>
+      )}
+
+      {/* VACCINATION DASHBOARD TAB */}
+      {activeTab === "vaccination" && (
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold">💉 Vaccination Dashboard</h2>
+
+          {vaccinationData ? (
+            <>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-gradient-to-br from-green-600 to-green-800 p-6 rounded-lg">
+                  <p className="text-gray-200 text-sm">Total Vaccinated</p>
+                  <p className="text-3xl font-bold mt-2">{(vaccinationData.total_vaccinated / 1000000).toFixed(1)}M</p>
+                  <p className="text-xs text-green-200 mt-2">{((vaccinationData.total_vaccinated / vaccinationData.population) * 100).toFixed(1)}% Population</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-lg">
+                  <p className="text-gray-200 text-sm">Fully Vaccinated</p>
+                  <p className="text-3xl font-bold mt-2">{(vaccinationData.fully_vaccinated / 1000000).toFixed(1)}M</p>
+                  <p className="text-xs text-blue-200 mt-2">{((vaccinationData.fully_vaccinated / vaccinationData.population) * 100).toFixed(1)}% Population</p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-lg">
+                  <p className="text-gray-200 text-sm">Vaccination Camps</p>
+                  <p className="text-3xl font-bold mt-2">{vaccinationData.camps_held.toLocaleString()}</p>
+                  <p className="text-xs text-purple-200 mt-2">Last 90 Days</p>
+                </div>
+                <div className="bg-gradient-to-br from-orange-600 to-orange-800 p-6 rounded-lg">
+                  <p className="text-gray-200 text-sm">Total Population</p>
+                  <p className="text-3xl font-bold mt-2">{(vaccinationData.population / 1000000).toFixed(1)}M</p>
+                  <p className="text-xs text-orange-200 mt-2">Tamil Nadu</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+                <h3 className="text-xl font-bold mb-4">Vaccination Programs</h3>
+                <div className="space-y-4">
+                  {Object.entries(vaccinationData.programs).map(([key, program]) => (
+                    <div key={key}><p className="font-semibold">{key.toUpperCase().replace('_', ' ')}: {program.coverage}% Coverage</p></div>
+                  ))}
+                </div>
+              </div>
+
+              <button className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+                📊 Generate Vaccination Report
+              </button>
+            </>
+          ) : (
+            <p className="text-gray-400">Loading vaccination data...</p>
+          )}
+        </div>
+      )}
+
+      {/* STAFF MANAGEMENT TAB */}
+      {activeTab === "staff" && (
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold">👨‍⚕️ Staff Management</h2>
+
+          {staffData ? (
+            <>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                  <p className="text-gray-400 text-sm">Total Doctors</p>
+                  <p className="text-3xl font-bold text-blue-400">{staffData.doctors.toLocaleString()}</p>
+                </div>
+                <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                  <p className="text-gray-400 text-sm">Nurses & Paramedics</p>
+                  <p className="text-3xl font-bold text-green-400">{staffData.nurses.toLocaleString()}</p>
+                </div>
+                <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                  <p className="text-gray-400 text-sm">Support Staff</p>
+                  <p className="text-3xl font-bold text-purple-400">{staffData.paramedics.toLocaleString()}</p>
+                </div>
+                <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                  <p className="text-gray-400 text-sm">Administrative</p>
+                  <p className="text-3xl font-bold text-orange-400">{staffData.administrative.toLocaleString()}</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+                <h3 className="text-xl font-bold mb-4">📋 Doctor Specialties</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(staffData.specialties).map(([key, count]) => (
+                    <div key={key}><p>{key.replace(/_/g, ' ').toUpperCase()}: {count.toLocaleString()}</p></div>
+                  ))}
+                </div>
+              </div>
+
+              <button className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+                👥 Download Staff Directory
+              </button>
+            </>
+          ) : (
+            <p className="text-gray-400">Loading staff data...</p>
+          )}
+        </div>
+      )}
+
+      {/* INVENTORY TAB */}
+      {activeTab === "inventory" && (
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold">📦 Medicine & Inventory Management</h2>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+              <p className="text-gray-400 text-sm">Total Medicines</p>
+              <p className="text-3xl font-bold text-blue-400">8,450</p>
+            </div>
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+              <p className="text-gray-400 text-sm">Low Stock Items</p>
+              <p className="text-3xl font-bold text-orange-400">234</p>
+            </div>
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+              <p className="text-gray-400 text-sm">Expiring Soon</p>
+              <p className="text-3xl font-bold text-red-400">56</p>
+            </div>
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+              <p className="text-gray-400 text-sm">Total Equipment</p>
+              <p className="text-3xl font-bold text-green-400">12,340</p>
+            </div>
+          </div>
+
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+            <h3 className="text-xl font-bold mb-4">📊 Top Medicines by Usage</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between"><span>Paracetamol</span><span className="text-orange-400">2.3M units/month</span></div>
+              <div className="flex justify-between"><span>Antibiotics</span><span className="text-orange-400">1.8M units/month</span></div>
+              <div className="flex justify-between"><span>Insulin</span><span className="text-orange-400">850K units/month</span></div>
+              <div className="flex justify-between"><span>Blood Pressure Meds</span><span className="text-orange-400">720K units/month</span></div>
+            </div>
+          </div>
+
+          <button className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+            📤 Export Inventory Report
+          </button>
+        </div>
+      )}
+
+      {/* FINANCE TAB */}
+      {activeTab === "finance" && (
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold">💰 Finance & Budget Management</h2>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-green-600 to-green-800 p-6 rounded-lg">
+              <p className="text-gray-200 text-sm">Annual Budget</p>
+              <p className="text-3xl font-bold mt-2">₹4,500 Cr</p>
+              <p className="text-xs text-green-200 mt-2">All Hospitals</p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-lg">
+              <p className="text-gray-200 text-sm">Utilized So Far</p>
+              <p className="text-3xl font-bold mt-2">₹3,915 Cr</p>
+              <p className="text-xs text-blue-200 mt-2">87% Utilized</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-lg">
+              <p className="text-gray-200 text-sm">Revenue Generated</p>
+              <p className="text-3xl font-bold mt-2">₹2,340 Cr</p>
+              <p className="text-xs text-purple-200 mt-2">OPD & IPD</p>
+            </div>
+            <div className="bg-gradient-to-br from-orange-600 to-orange-800 p-6 rounded-lg">
+              <p className="text-gray-200 text-sm">Cost Per Patient</p>
+              <p className="text-3xl font-bold mt-2">₹3,450</p>
+              <p className="text-xs text-orange-200 mt-2">Average</p>
+            </div>
+          </div>
+
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+            <h3 className="text-xl font-bold mb-4">📊 Budget Breakdown</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between"><span>Staff Salaries</span><span className="text-blue-400">₹1,890 Cr (42%)</span></div>
+              <div className="flex justify-between"><span>Medicine & Supplies</span><span className="text-green-400">₹945 Cr (21%)</span></div>
+              <div className="flex justify-between"><span>Equipment & Infrastructure</span><span className="text-purple-400">₹810 Cr (18%)</span></div>
+              <div className="flex justify-between"><span>Operations & Utilities</span><span className="text-orange-400">₹585 Cr (13%)</span></div>
+              <div className="flex justify-between"><span>Training & Development</span><span className="text-yellow-400">₹270 Cr (6%)</span></div>
+            </div>
+          </div>
+
+          <button className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+            💹 Download Financial Report
+          </button>
+        </div>
+      )}
+
+      {/* QUALITY & COMPLIANCE TAB */}
+      {activeTab === "quality" && (
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold">✅ Quality & Compliance</h2>
+
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-green-600 to-green-800 p-6 rounded-lg">
+              <p className="text-gray-200 text-sm">Compliance Score</p>
+              <p className="text-3xl font-bold mt-2">94%</p>
+              <p className="text-xs text-green-200 mt-2">Excellent</p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-lg">
+              <p className="text-gray-200 text-sm">Infection Rate</p>
+              <p className="text-3xl font-bold mt-2">0.8%</p>
+              <p className="text-xs text-blue-200 mt-2">Below Target</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-lg">
+              <p className="text-gray-200 text-sm">Accreditation Status</p>
+              <p className="text-3xl font-bold mt-2">3,240</p>
+              <p className="text-xs text-purple-200 mt-2">Hospitals</p>
+            </div>
+            <div className="bg-gradient-to-br from-orange-600 to-orange-800 p-6 rounded-lg">
+              <p className="text-gray-200 text-sm">Audit Findings</p>
+              <p className="text-3xl font-bold mt-2">23</p>
+              <p className="text-xs text-orange-200 mt-2">Minor Issues</p>
+            </div>
+          </div>
+
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
+            <h3 className="text-xl font-bold mb-4">📋 Quality Metrics</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between"><span>Patient Satisfaction Score</span><span className="text-green-400">4.6/5.0</span></div>
+              <div className="flex justify-between"><span>Mortality Rate</span><span className="text-green-400">1.2%</span></div>
+              <div className="flex justify-between"><span>Surgical Site Infections</span><span className="text-green-400">0.3%</span></div>
+              <div className="flex justify-between"><span>Nosocomial Infection Rate</span><span className="text-green-400">0.8%</span></div>
+              <div className="flex justify-between"><span>Re-admission Rate</span><span className="text-green-400">2.1%</span></div>
+            </div>
+          </div>
+
+          <button className="w-full bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold">
+            📄 Download Compliance Report
+          </button>
+        </div>
       )}
 
       {/* SUPPORT TICKETS TAB */}
@@ -1044,7 +1423,7 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
                       <div className="flex-1">
                         <p className="font-semibold text-sm">{model.name}</p>
                         <p className="text-xs text-gray-400">
-                          {model.category === "Premium" ? `₹${model.price}/year` : "Free"}
+                          {model.category === "Premium" ? "$$$$" : "Free"}
                         </p>
                       </div>
                       <span
@@ -1061,13 +1440,7 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
                 </div>
                 <p className="text-sm text-gray-400 mt-3">
                   Selected: {formData.subscribed_models.length} models
-                  {formData.subscribed_models.length > 0 &&
-                    ` (₹${
-                      formData.subscribed_models.reduce(
-                        (sum, id) => sum + (availableModels.find((m) => m.id === id)?.price || 0),
-                        0
-                      ) || 0
-                    }/year)`}
+                  {formData.subscribed_models.length > 0 && " ($$$$)"}
                 </p>
               </div>
 

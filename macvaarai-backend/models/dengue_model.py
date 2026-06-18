@@ -2,12 +2,26 @@ import numpy as np
 import tensorflow as tf
 import json
 import pandas as pd
+import os
 
-# Load the dengue model
-model = tf.keras.models.load_model("model_storage/dengue_model.h5")
+# Load the dengue model - with graceful fallback if missing
+model = None
+try:
+    if os.path.exists("model_storage/dengue_model.h5"):
+        model = tf.keras.models.load_model("model_storage/dengue_model.h5")
+except Exception as e:
+    print(f"[WARNING] Could not load dengue model: {e}")
+    model = None
 
 def predict_dengue_from_json(file_bytes):
     try:
+        if model is None:
+            return {
+                "label": "unavailable",
+                "confidence": 0.0,
+                "summary": "Dengue model not loaded - download model files to enable this feature"
+            }
+
         # Decode incoming JSON
         content = file_bytes.decode("utf-8")
         data = json.loads(content)

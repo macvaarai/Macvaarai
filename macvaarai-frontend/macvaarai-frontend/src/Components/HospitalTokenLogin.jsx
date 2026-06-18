@@ -34,6 +34,12 @@ const HospitalTokenLogin = ({ apiUrl }) => {
 
         console.log("Hospital data received:", hospital);
 
+        // Convert relative logo URL to full URL
+        let logoUrl = hospital.logo_url || "";
+        if (logoUrl && !logoUrl.startsWith("http")) {
+          logoUrl = `${apiUrl}${logoUrl}`;
+        }
+
         // Store hospital and admin info in localStorage
         localStorage.setItem("adminKey", accessToken.trim());
         localStorage.setItem("adminRole", "hospital_admin");
@@ -49,10 +55,12 @@ const HospitalTokenLogin = ({ apiUrl }) => {
         localStorage.setItem("hospitalState", hospital.state || "");
         localStorage.setItem("hospitalAddress", hospital.address || "");
         localStorage.setItem("hospitalZip", hospital.zip_code || "");
+        localStorage.setItem("hospitalLogoUrl", logoUrl);
         localStorage.setItem("numDoctors", hospital.num_doctors || "0");
         localStorage.setItem("numBeds", hospital.num_beds || "0");
 
         console.log("localStorage set with hospital ID:", localStorage.getItem("hospitalId"));
+        console.log("Hospital logo URL:", logoUrl);
 
         // Store subscribed models
         if (hospital.subscribed_models) {

@@ -142,18 +142,18 @@ class AccessLog:
         }
 
 
-# Available AI Models (12 Total)
+# Available AI Models (12 Total) - All Premium with AI Suffix
 AVAILABLE_MODELS = [
-    {"id": "eye", "name": "Eye Disease Detection", "premium": True},
-    {"id": "covid", "name": "COVID-19 Detection", "premium": True},
-    {"id": "ecg", "name": "ECG Analysis", "premium": True},
-    {"id": "skin", "name": "Skin Cancer Detection", "premium": True},
-    {"id": "breast", "name": "Breast Cancer Detection", "premium": True},
-    {"id": "tb", "name": "Tuberculosis Detection", "premium": True},
-    {"id": "diabetes", "name": "Diabetes Detection", "premium": False},
-    {"id": "pneumonia", "name": "Pneumonia Detection", "premium": False},
-    {"id": "malaria", "name": "Malaria Detection", "premium": False},
-    {"id": "dengue", "name": "Dengue Detection", "premium": False},
-    {"id": "stroke", "name": "Stroke Prediction", "premium": True},
-    {"id": "kidney", "name": "Kidney Disease Detection", "premium": False},
+    {"id": "eye", "name": "Eye Disease Detection AI", "premium": True},
+    {"id": "covid", "name": "COVID-19 Detection AI", "premium": True},
+    {"id": "ecg", "name": "ECG Analysis AI", "premium": True},
+    {"id": "skin", "name": "Skin Cancer Detection AI", "premium": True},
+    {"id": "breast", "name": "Breast Cancer Detection AI", "premium": True},
+    {"id": "tb", "name": "Tuberculosis Detection AI", "premium": True},
+    {"id": "diabetes", "name": "Diabetes Detection AI", "premium": True},
+    {"id": "pneumonia", "name": "Pneumonia Detection AI", "premium": True},
+    {"id": "malaria", "name": "Malaria Detection AI", "premium": True},
+    {"id": "dengue", "name": "Dengue Detection AI", "premium": True},
+    {"id": "stroke", "name": "Stroke Prediction AI", "premium": True},
+    {"id": "kidney", "name": "Kidney Disease Detection AI", "premium": True},
 ]

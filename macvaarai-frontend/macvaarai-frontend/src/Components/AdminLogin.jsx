@@ -1,69 +1,119 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-
-const HOSPITAL_ADMIN_KEYS = ["mac1001", "anbu1001", "bhai1001", "ai1001"];
-const SUPER_ADMIN_KEY = "hero_admin_001";
+import React, { useState } from 'react';
+import { LogIn, Lock, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
-  const [key, setKey] = useState("");
+  const [email, setEmail] = useState('anbu@1001');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
-  const isSuperAdminPath = location.pathname === "/superadmin/login";
 
-  const handleSubmit = () => {
-    const trimmedKey = key.trim();
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-    // Check if Super Admin login
-    if (isSuperAdminPath && trimmedKey === SUPER_ADMIN_KEY) {
-      localStorage.setItem("adminKey", trimmedKey);
-      localStorage.setItem("adminRole", "hero_admin");
-      localStorage.setItem("adminId", "hero_001");
-      localStorage.setItem("adminName", "Hero Admin");
-      navigate("/superadmin");
-    }
-    // Check if Hospital Admin login
-    else if (!isSuperAdminPath && HOSPITAL_ADMIN_KEYS.includes(trimmedKey)) {
-      localStorage.setItem("adminKey", trimmedKey);
-      localStorage.setItem("adminRole", "hospital_admin");
-      localStorage.setItem("adminId", "admin_001");
-      localStorage.setItem("adminName", "Dr. Raj Kumar");
-      localStorage.setItem("hospitalId", "APL-001");
-      navigate("/hospital");
-    }
-    else {
-      alert("❌ Invalid Access Key!");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${apiUrl}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        localStorage.setItem('adminToken', data.admin_id);
+        localStorage.setItem('adminName', data.name);
+        localStorage.setItem('adminEmail', data.email);
+        localStorage.setItem('adminRole', data.role);
+        navigate('/admin/dashboard');
+      } else {
+        setError(data.message || 'Login failed');
+      }
+    } catch (err) {
+      setError('Login error: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
-      <h2 className="text-2xl font-bold mb-2">
-        {isSuperAdminPath ? "🔐 Super Admin Access" : "🏥 Hospital Admin Access"}
-      </h2>
-      <p className="text-gray-400 mb-6 text-sm">
-        {isSuperAdminPath ? "Full System Control" : "Hospital Management"}
-      </p>
-      <input
-        type="password"
-        placeholder="Enter Access Key"
-        value={key}
-        onChange={(e) => setKey(e.target.value)}
-        onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
-        className="p-2 rounded text-black mb-3 w-64"
-      />
-      <button
-        onClick={handleSubmit}
-        className="bg-blue-600 px-6 py-2 rounded hover:bg-blue-500 mb-4"
-      >
-        Login
-      </button>
-      <p className="text-xs text-gray-500 mt-4">
-        {isSuperAdminPath ? (
-          <>Demo Key: <code className="bg-black px-2 py-1">hero_admin_001</code></>
-        ) : (
-          <>Demo Keys: <code className="bg-black px-2 py-1">mac1001</code></>
-        )}
-      </p>
+    <div style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)" }} className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-lg shadow-2xl p-8">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Mail size={32} className="text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">MacvaarAI Admin</h1>
+            <p className="text-gray-600">System Administration Portal</p>
+          </div>
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 flex items-center gap-2">
+                <Mail size={18} />
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="anbu@1001"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 font-bold mb-2 flex items-center gap-2">
+                <Lock size={18} />
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Logging In...
+                </>
+              ) : (
+                <>
+                  <LogIn size={20} />
+                  Login to Admin Panel
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="text-center text-gray-600 text-sm mt-6 pt-6 border-t border-gray-200">
+            <p>MacvaarAI Administration System</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

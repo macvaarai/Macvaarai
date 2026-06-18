@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Stanley Medical College and Hospital",
+    "slug": "stanley",
+    "email": "deansmc@tn.gov.in",
+    "phone": "+91-44-25305112",
+    "address": "Old Washermanpet",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "zip_code": "600001",
+    "admin_name": "Stanley Dean",
+    "admin_email": "stanleycollege19@gmail.com",
+    "num_doctors": 150,
+    "num_beds": 800,
+    "subscribed_models": ["eye", "covid", "pneumonia", "diabetes"]
+  },
+  {
+    "name": "Kilpauk Medical College",
+    "slug": "kilpauk",
+    "email": "glmcdean2018@gmail.com",
+    "phone": "+91-44-28364951",
+    "address": "Poonamallee High Rd, Kilpauk",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "zip_code": "600010",
+    "admin_name": "Kilpauk Dean",
+    "admin_email": "kilpauk.admin@gmail.com",
+    "num_doctors": 120,
+    "num_beds": 600,
+    "subscribed_models": ["covid", "pneumonia", "malaria", "dengue"]
+  },
+  {
+    "name": "TN Government Omandurar Medical College",
+    "slug": "omandurar",
+    "email": "omandurar@tn.gov.in",
+    "phone": "+91-44-25333319",
+    "address": "169, Wallahja Rd, Police Quarters, Triplicane",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "zip_code": "600002",
+    "admin_name": "Omandurar Dean",
+    "admin_email": "omandurar.dean@tn.gov.in",
+    "num_doctors": 130,
+    "num_beds": 700,
+    "subscribed_models": ["covid", "tb", "pneumonia", "malaria"]
+  },
+  {
+    "name": "Madras Medical College (MMC)",
+    "slug": "mmc",
+    "email": "deannmc@tn.gov.in",
+    "phone": "+91-44-25305112",
+    "address": "No. 1, EVR Periyar Salai, Park Town",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "zip_code": "600003",
+    "admin_name": "MMC Dean",
+    "admin_email": "madras.medical@tn.gov.in",
+    "num_doctors": 160,
+    "num_beds": 900,
+    "subscribed_models": ["covid", "eye", "pneumonia", "tb", "malaria", "dengue", "diabetes", "kidney", "throat", "lung", "skin", "ecg", "stroke", "colorectal", "ear", "nose", "oral", "pharyngitis"]
+  }
+]

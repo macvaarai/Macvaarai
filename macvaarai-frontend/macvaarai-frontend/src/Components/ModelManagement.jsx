@@ -174,7 +174,7 @@ const ModelManagement = ({ apiUrl }) => {
           <p className="text-gray-200 text-sm">Premium Models</p>
           <p className="text-3xl font-bold mt-2">{models.filter(m => m.category === "Premium").length}</p>
           <p className="text-sm text-gray-300 mt-1">
-            ₹{models.filter(m => m.category === "Premium").reduce((sum, m) => sum + m.price, 0)}/year each
+            $$$$ per model
           </p>
         </div>
         <div className="bg-gradient-to-br from-green-600 to-green-800 p-4 rounded-lg">
@@ -183,8 +183,8 @@ const ModelManagement = ({ apiUrl }) => {
           <p className="text-sm text-gray-300 mt-1">No charge</p>
         </div>
         <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-4 rounded-lg">
-          <p className="text-gray-200 text-sm">Total Revenue (4 Premium)</p>
-          <p className="text-3xl font-bold mt-2">₹20,000</p>
+          <p className="text-gray-200 text-sm">Total Revenue (Premium)</p>
+          <p className="text-3xl font-bold mt-2">$$$$</p>
           <p className="text-sm text-gray-300 mt-1">per hospital/year</p>
         </div>
       </div>
@@ -210,7 +210,7 @@ const ModelManagement = ({ apiUrl }) => {
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="font-bold text-lg">
-                      {model.category === "Free" ? "FREE" : `₹${model.price}`}
+                      {model.category === "Free" ? "FREE" : "$$$$"}
                     </p>
                     <span className={`text-xs px-2 py-1 rounded block mt-1 ${
                       model.category === "Premium"
