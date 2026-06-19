@@ -1,0 +1,12 @@
+services:
+  - type: static
+    name: macvaarai-frontend
+    buildCommand: npm install && npm run build
+    staticPublicPath: ./dist
+    publishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://macvaarai-backend.onrender.com
+    routes:
+      - path: /*
+        destination: /index.html
