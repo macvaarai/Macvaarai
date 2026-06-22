@@ -251,13 +251,17 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
   const handleAddHospital = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.admin_name || !formData.email || !formData.phone || !formData.address) {
-      alert("Please fill in all required fields");
+      alert("❌ Please fill in all required fields");
       return;
     }
 
     try {
       const endpoint = editingHospitalId ? `/admin/hospitals/${editingHospitalId}` : "/admin/hospitals";
       const method = editingHospitalId ? "PUT" : "POST";
+      const fullUrl = `${apiUrl}${endpoint}`;
+
+      console.log(`[${method}] Calling: ${fullUrl}`);
+      console.log("Form Data:", formData);
 
       const formDataObj = new FormData();
       formDataObj.append("name", formData.name);
@@ -273,12 +277,14 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
       formDataObj.append("num_beds", formData.num_beds || "0");
       formDataObj.append("subscribed_models", JSON.stringify(formData.subscribed_models));
 
-      const res = await fetch(`${apiUrl}${endpoint}`, {
+      const res = await fetch(fullUrl, {
         method,
         body: formDataObj,
       });
 
+      console.log("Response Status:", res.status);
       const data = await res.json();
+      console.log("Response Data:", data);
 
       if (res.ok) {
         const hospitalId = data.hospital_id;
@@ -310,11 +316,26 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
         setShowAddHospitalModal(false);
         fetchHospitals();
       } else {
-        alert("❌ Error: " + (data.error || "Failed to save hospital"));
+        console.error("Full Error Response:", res.status, data);
+        let errorMsg = `HTTP ${res.status}`;
+
+        // Try different error formats
+        if (data.detail) {
+          errorMsg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+        } else if (data.message) {
+          errorMsg = data.message;
+        } else if (data.error) {
+          errorMsg = data.error;
+        } else if (data) {
+          errorMsg = JSON.stringify(data);
+        }
+
+        console.error("Formatted Error:", errorMsg);
+        alert(`❌ Error: ${errorMsg}`);
       }
     } catch (err) {
       console.error("Error:", err);
-      alert("Error saving hospital: " + err.message);
+      alert(`❌ Connection Error: ${err.message}\n\nMake sure backend is running at: ${apiUrl}`);
     }
   };
 
@@ -356,13 +377,24 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
     if (!window.confirm("Are you sure you want to delete this hospital?")) return;
 
     try {
-      const res = await fetch(`${apiUrl}/admin/hospitals/${hospitalId}`, { method: "DELETE" });
+      const deleteUrl = `${apiUrl}/admin/hospitals/${hospitalId}`;
+      console.log("Deleting hospital:", deleteUrl);
+
+      const res = await fetch(deleteUrl, { method: "DELETE" });
+      const data = await res.json();
+
+      console.log("Delete Response:", res.status, data);
+
       if (res.ok) {
-        alert("Hospital deleted successfully!");
+        alert("✅ Hospital deleted successfully!");
         fetchHospitals();
+      } else {
+        const errorMsg = data.detail || data.message || data.error || `HTTP ${res.status}`;
+        alert(`❌ Error deleting hospital: ${errorMsg}`);
       }
     } catch (err) {
       console.error("Error deleting hospital:", err);
+      alert(`❌ Connection Error: ${err.message}\n\nBackend URL: ${apiUrl}`);
     }
   };
 
@@ -1271,6 +1303,8 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
                 <h3 className="text-lg font-bold mb-4">🏥 Hospital Details</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <input
+                    id="hospital-name"
+                    name="name"
                     type="text"
                     placeholder="Hospital Name *"
                     value={formData.name}
@@ -1278,6 +1312,8 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
                     className="col-span-2 p-3 rounded bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none"
                   />
                   <input
+                    id="hospital-email"
+                    name="email"
                     type="email"
                     placeholder="Hospital Email *"
                     value={formData.email}
@@ -1285,6 +1321,8 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
                     className="p-3 rounded bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none"
                   />
                   <input
+                    id="hospital-phone"
+                    name="phone"
                     type="tel"
                     placeholder="Hospital Phone *"
                     value={formData.phone}
@@ -1292,6 +1330,8 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
                     className="p-3 rounded bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none"
                   />
                   <input
+                    id="hospital-address"
+                    name="address"
                     type="text"
                     placeholder="Address *"
                     value={formData.address}
@@ -1299,6 +1339,8 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
                     className="col-span-2 p-3 rounded bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none"
                   />
                   <input
+                    id="hospital-city"
+                    name="city"
                     type="text"
                     placeholder="City"
                     value={formData.city}
@@ -1306,6 +1348,8 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
                     className="p-3 rounded bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none"
                   />
                   <input
+                    id="hospital-state"
+                    name="state"
                     type="text"
                     placeholder="State"
                     value={formData.state}
@@ -1313,6 +1357,8 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
                     className="p-3 rounded bg-gray-800 border border-gray-600 focus:border-blue-500 outline-none"
                   />
                   <input
+                    id="hospital-zip"
+                    name="zip_code"
                     type="text"
                     placeholder="Zip Code"
                     value={formData.zip_code}
