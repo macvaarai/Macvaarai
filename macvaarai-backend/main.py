@@ -789,42 +789,6 @@ async def update_hospital(
         return {"status": "error", "error": str(e)}
 
 
-@app.delete("/admin/hospitals/{hospital_id}")
-async def delete_hospital(hospital_id: str):
-    """Delete hospital"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Convert hospital_id to int
-        try:
-            hospital_id_int = int(hospital_id)
-        except:
-            hospital_id_int = hospital_id
-
-        # Get hospital name for response
-        cursor.execute("SELECT name FROM hospitals WHERE hospital_id = ?", (hospital_id,))
-        row = cursor.fetchone()
-
-        if not row:
-            conn.close()
-            return {"status": "error", "message": f"Hospital with ID {hospital_id} not found"}
-
-        hospital_name = row[0]
-
-        # Delete hospital
-        cursor.execute("DELETE FROM hospitals WHERE hospital_id = ?", (hospital_id,))
-        conn.commit()
-        conn.close()
-
-        return {
-            "status": "success",
-            "message": f"Hospital '{hospital_name}' deleted successfully"
-        }
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-
 @app.post("/admin/organizations/bulk-import")
 async def bulk_import_organizations():
     """Bulk import organizations from organizations_data.json"""
@@ -2973,43 +2937,6 @@ async def delete_organization(org_id: str):
 # ============================================================================
 # HOSPITAL MANAGEMENT
 # ============================================================================
-
-@app.post("/admin/hospitals")
-async def create_hospital(request: dict):
-    """Create new hospital"""
-    try:
-        name = request.get("name", "")
-        email = request.get("email", "")
-        phone = request.get("phone", "")
-        city = request.get("city", "")
-        state = request.get("state", "")
-        beds = request.get("beds_total", 0)
-        org_id = request.get("organization_id")
-        
-        access_code = f"HOSP_{name[:3].upper()}_{uuid.uuid4().hex[:6]}"
-        
-        if not name or not email:
-            return {"status": "error", "message": "Name and email required"}
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO hospitals (name, email, phone, city, state, beds_total, access_code, organization_id, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (name, email, phone, city, state, beds, access_code, org_id, 1)
-        )
-        conn.commit()
-        hospital_id = cursor.lastrowid
-        conn.close()
-        
-        return {
-            "status": "success",
-            "hospital_id": hospital_id,
-            "name": name,
-            "access_code": access_code,
-            "message": f"Hospital {name} created successfully"
-        }
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
 
 @app.get("/admin/hospitals")
 async def get_all_hospitals(org_id: int = None):

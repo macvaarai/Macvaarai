@@ -29,13 +29,24 @@ const OrganizationManagement = () => {
   useEffect(() => {
     const fetchModels = async () => {
       try {
+        console.log('🔄 Fetching models from: http://localhost:8000/admin/available-models');
         const response = await fetch('http://localhost:8000/admin/available-models');
+        console.log('Response Status:', response.status);
         const data = await response.json();
-        if (data.models) {
+        console.log('Models Data:', data);
+
+        if (data.models && data.models.length > 0) {
+          console.log('✅ Models loaded:', data.models.length);
           setAllModels(data.models);
+        } else if (data.status === 'success' && data.models) {
+          setAllModels(data.models);
+        } else {
+          console.warn('⚠️ No models found in response:', data);
+          setAllModels([]);
         }
       } catch (error) {
-        console.error('Error fetching models:', error);
+        console.error('❌ Error fetching models:', error);
+        alert('Error fetching models: ' + error.message);
       }
     };
     fetchModels();
@@ -324,70 +335,78 @@ const OrganizationManagement = () => {
               <div className="grid grid-cols-2 gap-4">
                 <input
                   type="text"
+                  id="org-name"
                   name="name"
                   placeholder="Organization Name *"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="border border-gray-300 rounded-lg px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
                 <input
                   type="email"
+                  id="org-email"
                   name="email"
                   placeholder="Organization Email *"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="border border-gray-300 rounded-lg px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
                 <input
                   type="tel"
+                  id="org-phone"
                   name="phone"
                   placeholder="Phone Number *"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="border border-gray-300 rounded-lg px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
                 <input
                   type="text"
+                  id="org-address"
                   name="address"
                   placeholder="Address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="border border-gray-300 rounded-lg px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
                 <input
                   type="text"
+                  id="org-city"
                   name="city"
                   placeholder="City"
                   value={formData.city}
                   onChange={handleInputChange}
-                  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="border border-gray-300 rounded-lg px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
                 <input
                   type="text"
+                  id="org-state"
                   name="state"
                   placeholder="State"
                   value={formData.state}
                   onChange={handleInputChange}
-                  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="border border-gray-300 rounded-lg px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
                 <input
                   type="text"
+                  id="org-zip"
                   name="zip_code"
                   placeholder="Zip Code"
                   value={formData.zip_code}
                   onChange={handleInputChange}
-                  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="border border-gray-300 rounded-lg px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
                 <input
                   type="number"
+                  id="org-hospitals"
                   name="num_hospitals"
                   placeholder="Number of Associated Hospitals"
                   value={formData.num_hospitals}
                   onChange={handleInputChange}
-                  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="border border-gray-300 rounded-lg px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
                   min="0"
                 />
               </div>
