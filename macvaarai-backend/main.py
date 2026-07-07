@@ -1,5 +1,5 @@
 import re
-from fastapi import FastAPI, UploadFile, File, Form, Depends
+from fastapi import FastAPI, UploadFile, File, Form, Depends, Request
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
 from utils.file_utils import detect_file_type
@@ -463,11 +463,12 @@ class UserRequest(BaseModel):
 
 
 @app.post("/admin/login")
-async def admin_login(request: dict):
+async def admin_login(request: Request):
     """Admin authentication - NEW SYSTEM"""
     try:
-        email = request.get("email", "")
-        password = request.get("password", "")
+        data = await request.json()
+        email = data.get("email", "")
+        password = data.get("password", "")
 
         conn = get_db_connection()
         cursor = conn.cursor()
