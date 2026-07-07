@@ -1,9 +1,14 @@
-import React, { useState } from "react";
-import SignInForm from "./Components/SignInForm";
-import SignUpForm from "./Components/SignUpForm";
+import React from "react";
+import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
-  // Bypass authentication - go directly to dashboard
+  // Redirect to admin login if not authenticated
+  const adminToken = localStorage.getItem("adminToken");
+
+  if (!adminToken) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
   return children;
 };
 
