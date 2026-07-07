@@ -633,8 +633,43 @@ const App = () => {
           }
         />
 
-        {/* 🔹 NEW ADMIN PANEL - Auto-redirect to dashboard */}
-        <Route path="/admin/login" element={<Navigate to="/" replace />} />
+        {/* 🔹 ADMIN LOGIN - Token-based (simplified) */}
+        <Route
+          path="/admin/login"
+          element={
+            <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center p-6">
+              <div className="bg-blue-900 rounded-lg shadow-2xl p-8 max-w-md w-full border-2 border-blue-500">
+                <div className="text-center mb-6">
+                  <img src="/logos/Macvaar.jpg" alt="MacvaarAI Logo" className="h-20 w-20 rounded-full border-4 border-blue-500 mx-auto object-cover mb-4" />
+                  <h2 className="text-3xl font-bold text-blue-400 mb-2">MacvaarAI Admin</h2>
+                  <p className="text-gray-300">System Administration Portal</p>
+                </div>
+                <input
+                  type="password"
+                  placeholder="Enter admin token"
+                  id="adminToken"
+                  className="w-full border-2 border-gray-600 rounded-lg px-4 py-3 mb-4 bg-blue-800 text-white placeholder-gray-400"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const token = document.getElementById('adminToken').value;
+                      if (token === 'ADMIN_KEY_2024') {
+                        localStorage.setItem('adminToken', token);
+                        localStorage.setItem('adminName', 'System Admin');
+                        localStorage.setItem('adminRole', 'hero_admin');
+                        localStorage.setItem('adminEmail', 'admin@macvaar.com');
+                        window.location.href = '/';
+                      } else {
+                        alert('Invalid admin token');
+                      }
+                    }
+                  }}
+                  autoFocus
+                />
+                <p className="text-center text-gray-400 text-sm mt-4">Enter admin access token and press Enter</p>
+              </div>
+            </div>
+          }
+        />
 
         <Route
           path="/admin/dashboard"
