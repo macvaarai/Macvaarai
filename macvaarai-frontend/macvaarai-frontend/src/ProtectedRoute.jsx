@@ -1,12 +1,11 @@
 import React from "react";
 
 const ProtectedRoute = ({ children }) => {
-  // Set default admin token if not exists (for development)
-  if (!localStorage.getItem("adminToken")) {
-    localStorage.setItem("adminToken", "dev-admin");
-    localStorage.setItem("adminName", "Admin");
-    localStorage.setItem("adminRole", "hero_admin");
-  }
+  // Development mode - auto-login
+  localStorage.setItem("adminToken", "dev-admin-session");
+  localStorage.setItem("adminName", "Vijay Care Admin");
+  localStorage.setItem("adminRole", "hero_admin");
+  localStorage.setItem("adminEmail", "admin@vijaycare.com");
 
   return children;
 };

@@ -1,0 +1,8 @@
+To enable development mode (skip login):
+1. Open browser DevTools (F12)
+2. Go to Console tab
+3. Paste this:
+   localStorage.setItem('adminToken', 'dev-admin');
+   localStorage.setItem('adminName', 'Admin');
+   localStorage.setItem('adminRole', 'hero_admin');
+   window.location.reload();
