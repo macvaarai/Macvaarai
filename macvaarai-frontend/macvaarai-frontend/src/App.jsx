@@ -633,8 +633,8 @@ const App = () => {
           }
         />
 
-        {/* 🔹 NEW ADMIN PANEL - anbu@1001 */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        {/* 🔹 NEW ADMIN PANEL - Auto-redirect to dashboard */}
+        <Route path="/admin/login" element={<Navigate to="/" replace />} />
 
         <Route
           path="/admin/dashboard"
