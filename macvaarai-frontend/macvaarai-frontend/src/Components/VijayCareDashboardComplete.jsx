@@ -520,23 +520,93 @@ const VijayCareDashboardComplete = () => {
         {/* MODELS */}
         {activeTab === 'models' && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-yellow-400">Subscribed Models ({subscribedModels.length})</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {allModels.filter(m => subscribedModels.includes(m.id)).map((model) => (
-                <div
-                  key={model.id}
-                  onClick={() => setSelectedModel(model)}
-                  className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-green-500 hover:border-yellow-500 hover:bg-gray-700 transition cursor-pointer transform hover:scale-105"
-                >
-                  <div className="text-5xl mb-3">{model.icon}</div>
-                  <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-yellow-400">{model.price}</span>
-                    <span className="text-sm font-bold text-green-400">✓ Active</span>
-                  </div>
-                  <p className="text-gray-400 text-sm mt-3">Click to analyze image</p>
+            <h2 className="text-3xl font-bold text-white mb-2">AI Manager</h2>
+            <p className="text-gray-400 text-lg mb-6">Powered by Macvaar AI</p>
+
+            <div className="space-y-8">
+              {/* Main AI Models */}
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-4">🏥 Primary AI Models</h3>
+                <div className="grid grid-cols-4 gap-6">
+                  {allModels.slice(0, 4).map((model, idx) => {
+                    const borderColors = ['border-pink-500', 'border-orange-500', 'border-blue-500', 'border-cyan-500'];
+                    return (
+                      <div
+                        key={model.id}
+                        onClick={() => setSelectedModel(model)}
+                        className={`bg-gray-900 rounded-xl shadow-lg p-6 border-2 ${borderColors[idx]} hover:bg-gray-800 transition cursor-pointer transform hover:scale-105`}
+                      >
+                        <div className="text-5xl mb-3">{model.icon}</div>
+                        <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">{model.description}</p>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              </div>
+
+              {/* Advanced Models */}
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-4">⚡ Advanced Models</h3>
+                <div className="grid grid-cols-4 gap-6">
+                  {allModels.slice(4, 8).map((model, idx) => {
+                    const borderColors = ['border-green-500', 'border-yellow-500', 'border-purple-500', 'border-red-500'];
+                    return (
+                      <div
+                        key={model.id}
+                        onClick={() => setSelectedModel(model)}
+                        className={`bg-gray-900 rounded-xl shadow-lg p-6 border-2 ${borderColors[idx]} hover:bg-gray-800 transition cursor-pointer transform hover:scale-105`}
+                      >
+                        <div className="text-5xl mb-3">{model.icon}</div>
+                        <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">{model.description}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Specialized Models */}
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-4">🔬 Specialized Models</h3>
+                <div className="grid grid-cols-4 gap-6">
+                  {allModels.slice(8, 12).map((model, idx) => {
+                    const borderColors = ['border-indigo-500', 'border-teal-500', 'border-lime-500', 'border-rose-500'];
+                    return (
+                      <div
+                        key={model.id}
+                        onClick={() => setSelectedModel(model)}
+                        className={`bg-gray-900 rounded-xl shadow-lg p-6 border-2 ${borderColors[idx]} hover:bg-gray-800 transition cursor-pointer transform hover:scale-105`}
+                      >
+                        <div className="text-5xl mb-3">{model.icon}</div>
+                        <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">{model.description}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Diagnostic Models */}
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-4">📊 Diagnostic Models</h3>
+                <div className="grid grid-cols-4 gap-6">
+                  {allModels.slice(12, 16).map((model, idx) => {
+                    const borderColors = ['border-blue-400', 'border-purple-400', 'border-pink-400', 'border-yellow-400'];
+                    return (
+                      <div
+                        key={model.id}
+                        onClick={() => setSelectedModel(model)}
+                        className={`bg-gray-900 rounded-xl shadow-lg p-6 border-2 ${borderColors[idx]} hover:bg-gray-800 transition cursor-pointer transform hover:scale-105`}
+                      >
+                        <div className="text-5xl mb-3">{model.icon}</div>
+                        <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">{model.description}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         )}
