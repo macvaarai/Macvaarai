@@ -426,13 +426,76 @@ const VijayCareDashboardComplete = () => {
             </div>
 
             {showSchoolForm && (
-              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-blue-500 space-y-6">
-                <div><h3 className="text-lg font-bold text-blue-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-blue-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-blue-300 mb-4">📝 ENTER SCHOOL DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="School Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Principal/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Students" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setSchools([...schools, {...partnerForm, id: Date.now()}]); setShowSchoolForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-bold">Add School</button>
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-blue-500">
+                <div className="grid grid-cols-2 gap-8">
+                  {/* LEFT SIDE: SCHOOL DETAILS FORM */}
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-blue-300">📝 SCHOOL DETAILS</h3>
+                    <div className="space-y-3">
+                      <input type="text" placeholder="School Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+                      <input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+                      <input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+                      <input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+                      <input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+                      <input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+                      <input type="text" placeholder="Principal/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+                      <input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+                      <input type="number" placeholder="Number of Students" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
+                      <div className="pt-3">
+                        <p className="text-blue-300 text-sm font-bold mb-2">Selected Models: {partnerForm.allocated_models.length}</p>
+                        <button onClick={() => {setSchools([...schools, {...partnerForm, id: Date.now()}]); setShowSchoolForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-bold">Add School</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* RIGHT SIDE: AI MODELS GRID (4 COLUMNS) */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-blue-300">📚 SELECT AI MODELS</h3>
+                    <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto bg-gray-700 p-4 rounded border border-gray-600">
+                      {allModels.map(model => (
+                        <label key={model.id} className="flex items-start gap-3 p-3 bg-gray-800 rounded border border-gray-500 hover:border-blue-500 cursor-pointer transition">
+                          <input
+                            type="checkbox"
+                            checked={partnerForm.allocated_models.includes(model.id)}
+                            onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})}
+                            className="rounded mt-1"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-blue-300">{model.icon} {model.name}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {schools.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-blue-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-blue-300">🎓 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setSchools(schools.filter(s => s.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} students</p><p className="text-blue-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
+            {/* SCHOOLS LIST */}
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-blue-300">📋 Added Schools</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {schools.map(item => (
+                  <div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-blue-500">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-2xl font-bold text-blue-300">🎓 {item.name}</h3>
+                        <p className="text-gray-400 text-sm">{item.contact_name}</p>
+                      </div>
+                      <button onClick={() => setSchools(schools.filter(s => s.id !== item.id))} className="text-red-500 hover:text-red-700">
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                    <div className="text-sm text-gray-300 space-y-1">
+                      <p>📧 {item.email}</p>
+                      <p>📱 {item.phone}</p>
+                      <p>📍 {item.address}, {item.city}</p>
+                      <p>👥 {item.members} students</p>
+                      <p className="text-blue-400 font-bold">📚 {item.allocated_models.length} models allocated</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

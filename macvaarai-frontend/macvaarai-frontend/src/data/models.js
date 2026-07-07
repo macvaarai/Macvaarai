@@ -17,7 +17,8 @@ export const AI_MODELS = [
   { id: 'colorectal', name: 'Heart AI 12 lead', icon: '❤️', price: '$$$', description: 'Comprehensive 12-lead ECG interpretation for advanced cardiac assessment.' },
   { id: 'lung', name: 'Lungs AI', icon: '🫁', price: '$$$', description: 'Screen for respiratory conditions and get lung health insights using AI.' },
   { id: 'onelead', name: 'HeartAI 1 lead', icon: '❤️', price: '$$$', description: 'Quick ECG analysis using a single-lead input for early heart health screening.' },
-  { id: 'twelvelead', name: 'Heart AI 12 lead', icon: '❤️', price: '$$$', description: 'Comprehensive 12-lead ECG interpretation for advanced cardiac assessment.' }
+  { id: 'twelvelead', name: 'Heart AI 12 lead', icon: '❤️', price: '$$$', description: 'Comprehensive 12-lead ECG interpretation for advanced cardiac assessment.' },
+  { id: 'vitamind', name: 'Vitamin Deficiency AI', icon: '🥗', price: '$$$', description: 'Detect and assess vitamin deficiency symptoms with AI-powered nutrition screening.' }
 ];
 
 // Get model by ID
