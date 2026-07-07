@@ -1,12 +1,11 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
-  // Redirect to admin login if not authenticated
-  const adminToken = localStorage.getItem("adminToken");
-
-  if (!adminToken) {
-    return <Navigate to="/admin/login" replace />;
+  // Set default admin token if not exists (for development)
+  if (!localStorage.getItem("adminToken")) {
+    localStorage.setItem("adminToken", "dev-admin");
+    localStorage.setItem("adminName", "Admin");
+    localStorage.setItem("adminRole", "hero_admin");
   }
 
   return children;
