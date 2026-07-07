@@ -52,20 +52,24 @@ const HospitalAdminPortal = ({ onLogout, adminData }) => {
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
   const hospitalId = adminData?.hospital_id;
 
-  // All 12 AI models with pricing
+  // All 16 AI models with pricing
   const allModels = [
     { id: "eye", name: "Eye Disease Detection", price: "$$$$$", category: "Premium" },
     { id: "covid", name: "COVID-19 Detection AI", price: "$$$$$", category: "Premium" },
-    { id: "ecg", name: "ECG Analysis AI", price: "$$$$$", category: "Premium" },
-    { id: "skin", name: "Skin Cancer Detection AI", price: "$$$$$", category: "Premium" },
-    { id: "breast", name: "Breast Cancer Detection AI", price: "$$$$$", category: "Premium" },
-    { id: "tb", name: "Tuberculosis Detection AI", price: "$$$$$", category: "Premium" },
-    { id: "diabetes", name: "Diabetes Detection AI", price: "$$$$$", category: "Premium" },
     { id: "pneumonia", name: "Pneumonia Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "skin", name: "Skin Cancer Detection AI", price: "$$$$$", category: "Premium" },
     { id: "malaria", name: "Malaria Detection AI", price: "$$$$$", category: "Premium" },
     { id: "dengue", name: "Dengue Detection AI", price: "$$$$$", category: "Premium" },
-    { id: "stroke", name: "Stroke Prediction AI", price: "$$$$$", category: "Premium" },
-    { id: "kidney", name: "Kidney Disease Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "diabetes", name: "Diabetes Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "ear", name: "Ear Infection Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "nose", name: "Nasal Polyp Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "throat", name: "Throat Analysis AI", price: "$$$$$", category: "Premium" },
+    { id: "oral", name: "Oral Cancer Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "pharyngitis", name: "Pharyngitis Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "colorectal", name: "Colorectal Cancer Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "lung", name: "Lung Disease Detection AI", price: "$$$$$", category: "Premium" },
+    { id: "onelead", name: "1-Lead ECG Analysis AI", price: "$$$$$", category: "Premium" },
+    { id: "twelvelead", name: "12-Lead ECG Analysis AI", price: "$$$$$", category: "Premium" },
   ];
 
   // Fetch hospital data on mount

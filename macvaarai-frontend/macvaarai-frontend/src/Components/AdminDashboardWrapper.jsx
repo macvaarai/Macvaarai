@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AdminLoginPage from "./AdminLoginPage";
+import AdminLogin from "./AdminLogin";
 import HeroAdminDashboardNew from "./HeroAdminDashboardNew";
 import HospitalAdminDashboard from "./HospitalAdminDashboard";
 
@@ -52,7 +52,7 @@ const AdminDashboardWrapper = () => {
   }
 
   if (!isLoggedIn) {
-    return <AdminLoginPage onLoginSuccess={handleLoginSuccess} />;
+    return <AdminLogin />;
   }
 
   // Render appropriate dashboard based on role

@@ -143,17 +143,22 @@ class AccessLog:
 
 
 # Available AI Models (12 Total) - All Premium with AI Suffix
+# AVAILABLE MODELS - 16 total models with actual files
 AVAILABLE_MODELS = [
     {"id": "eye", "name": "Eye Disease Detection AI", "premium": True},
     {"id": "covid", "name": "COVID-19 Detection AI", "premium": True},
-    {"id": "ecg", "name": "ECG Analysis AI", "premium": True},
-    {"id": "skin", "name": "Skin Cancer Detection AI", "premium": True},
-    {"id": "breast", "name": "Breast Cancer Detection AI", "premium": True},
-    {"id": "tb", "name": "Tuberculosis Detection AI", "premium": True},
-    {"id": "diabetes", "name": "Diabetes Detection AI", "premium": True},
     {"id": "pneumonia", "name": "Pneumonia Detection AI", "premium": True},
+    {"id": "skin", "name": "Skin Cancer Detection AI", "premium": True},
     {"id": "malaria", "name": "Malaria Detection AI", "premium": True},
     {"id": "dengue", "name": "Dengue Detection AI", "premium": True},
-    {"id": "stroke", "name": "Stroke Prediction AI", "premium": True},
-    {"id": "kidney", "name": "Kidney Disease Detection AI", "premium": True},
+    {"id": "diabetes", "name": "Diabetes Detection AI", "premium": True},
+    {"id": "ear", "name": "Ear Infection Detection AI", "premium": True},
+    {"id": "nose", "name": "Nasal Polyp Detection AI", "premium": True},
+    {"id": "throat", "name": "Throat Disease Detection AI", "premium": True},
+    {"id": "oral", "name": "Oral Cancer Detection AI", "premium": True},
+    {"id": "pharyngitis", "name": "Pharyngitis Detection AI", "premium": True},
+    {"id": "colorectal", "name": "Colorectal Disease Detection AI", "premium": True},
+    {"id": "lung", "name": "Lung Disease Detection AI", "premium": True},
+    {"id": "onelead", "name": "1-Lead ECG Analysis AI", "premium": True},
+    {"id": "twelvelead", "name": "12-Lead ECG Analysis AI", "premium": True},
 ]

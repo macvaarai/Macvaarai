@@ -56,7 +56,7 @@ def preprocess_skin_image(image_bytes):
     return transform(image).unsqueeze(0)
 
 def predict_skin(image_bytes):
-    """Run inference and return label + confidence"""
+    """Run inference and return label + confidence + all predictions"""
     input_tensor = preprocess_skin_image(image_bytes)
 
     with torch.no_grad():
@@ -65,8 +65,14 @@ def predict_skin(image_bytes):
         idx = torch.argmax(probs, dim=1).item()
         confidence = probs[0][idx].item()
 
+    # Create all_predictions dictionary
+    all_predictions = {}
+    for i, label in enumerate(SKIN_AI_LABELS):
+        all_predictions[label] = float(probs[0][i].item())
+
     return {
         "label": SKIN_AI_LABELS[idx],
         "confidence": float(confidence),
+        "all_predictions": all_predictions,
         "summary": f"Skin diagnosis: {SKIN_AI_LABELS[idx]} ({confidence*100:.2f}%)"
     }

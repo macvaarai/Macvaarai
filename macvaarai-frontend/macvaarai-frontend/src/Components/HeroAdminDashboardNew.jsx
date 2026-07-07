@@ -35,20 +35,24 @@ const HeroAdminDashboardNew = ({ onLogout, adminData }) => {
 
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-  // Available models with pricing (12 total)
+  // Available models with pricing (16 total)
   const availableModels = [
     { id: "eye", name: "Eye Disease Detection AI", category: "Premium", price: "$$$$$" },
     { id: "covid", name: "COVID-19 Detection AI", category: "Premium", price: "$$$$$" },
-    { id: "ecg", name: "ECG Analysis AI", category: "Premium", price: "$$$$$" },
-    { id: "skin", name: "Skin Cancer Detection AI", category: "Premium", price: "$$$$$" },
-    { id: "breast", name: "Breast Cancer Detection AI", category: "Premium", price: "$$$$$" },
-    { id: "tb", name: "Tuberculosis Detection AI", category: "Premium", price: "$$$$$" },
-    { id: "diabetes", name: "Diabetes Detection AI", category: "Premium", price: "$$$$$" },
     { id: "pneumonia", name: "Pneumonia Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "skin", name: "Skin Cancer Detection AI", category: "Premium", price: "$$$$$" },
     { id: "malaria", name: "Malaria Detection AI", category: "Premium", price: "$$$$$" },
     { id: "dengue", name: "Dengue Detection AI", category: "Premium", price: "$$$$$" },
-    { id: "stroke", name: "Stroke Prediction AI", category: "Premium", price: "$$$$$" },
-    { id: "kidney", name: "Kidney Disease Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "diabetes", name: "Diabetes Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "ear", name: "Ear Infection Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "nose", name: "Nasal Polyp Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "throat", name: "Throat Analysis AI", category: "Premium", price: "$$$$$" },
+    { id: "oral", name: "Oral Cancer Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "pharyngitis", name: "Pharyngitis Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "colorectal", name: "Colorectal Cancer Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "lung", name: "Lung Disease Detection AI", category: "Premium", price: "$$$$$" },
+    { id: "onelead", name: "1-Lead ECG Analysis AI", category: "Premium", price: "$$$$$" },
+    { id: "twelvelead", name: "12-Lead ECG Analysis AI", category: "Premium", price: "$$$$$" },
   ];
 
   // Form state

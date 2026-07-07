@@ -52,7 +52,7 @@ def preprocess_pneumonia_image(image_bytes):
 def predict_pneumonia(image_bytes):
     """
     Predict pneumonia status from an X-ray image.
-    Returns label, confidence, and human-readable summary.
+    Returns label, confidence, all predictions, and summary.
     """
     input_array = preprocess_pneumonia_image(image_bytes)
 
@@ -62,8 +62,14 @@ def predict_pneumonia(image_bytes):
 
     label = PNEUMONIA_LABELS[class_index]
 
+    # Create all_predictions dictionary
+    all_predictions = {}
+    for i, prediction_label in enumerate(PNEUMONIA_LABELS):
+        all_predictions[prediction_label] = float(predictions[i])
+
     return {
         "label": label,
         "confidence": confidence,
+        "all_predictions": all_predictions,
         "summary": f"Pneumonia detection result: {label} ({confidence*100:.2f}%)"
     }

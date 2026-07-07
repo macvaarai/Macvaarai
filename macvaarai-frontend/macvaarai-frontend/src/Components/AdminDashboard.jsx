@@ -27,22 +27,20 @@ const AdminDashboard = () => {
   const [allModels, setAllModels] = useState([
     { id: 1, name: '👁️ Eye Disease Detection AI', desc: 'Diabetic retinopathy detection', input: 'Retinal Image', output: 'DR / No DR', type: 'Binary Classification', price: '$$$$$', status: 'Active' },
     { id: 2, name: '🦠 COVID-19 Detection AI', desc: 'Chest X-ray analysis', input: 'Chest X-ray', output: 'COVID / Normal / Pneumonia', type: 'Multi-class Classification', price: '$$$$$', status: 'Active' },
-    { id: 3, name: '❤️ ECG Analysis AI (12-Lead)', desc: 'Heart rhythm analysis', input: 'ECG Image', output: 'Normal / Abnormal / Arrhythmia', type: 'Multi-class Classification', price: '$$$$$', status: 'Active' },
-    { id: 4, name: '🩹 Skin Cancer Detection AI', desc: 'Lesion classification', input: 'Skin Image', output: 'Melanoma / Benign / Basal Cell', type: 'Multi-class Classification', price: '$$$$$', status: 'Active' },
-    { id: 5, name: '🫁 Tuberculosis Detection AI', desc: 'Chest radiograph analysis', input: 'Chest X-ray', output: 'TB / Normal / Suspicious', type: 'Classification', price: '$$$$$', status: 'Active' },
-    { id: 6, name: '🗣️ Throat Analysis AI', desc: 'Throat disease detection', input: 'Throat Image', output: 'Normal / Infected / Inflamed', type: 'Classification', price: '$$$$$', status: 'Active' },
-    { id: 7, name: '🫁 Lung Disease Detection AI', desc: 'Lung nodule detection', input: 'Chest Image', output: 'Nodule / Normal / Suspicious', type: 'Detection', price: '$$$$$', status: 'Active' },
-    { id: 8, name: '🔬 Colorectal Cancer AI', desc: 'Tissue classification', input: 'Histopathology Image', output: 'Adipose / Debris / Lymphocytes / Mucus / Muscle / Normal / Stroma / Adenocarcinoma', type: 'Multi-class Detection', price: '$$$$$', status: 'Active' },
-    { id: 9, name: '🧠 Stroke Prediction AI', desc: 'Stroke risk assessment', input: 'Patient Data', output: 'High Risk / Medium Risk / Low Risk', type: 'Risk Prediction', price: '$$$$$', status: 'Active' },
-    { id: 10, name: '💉 Diabetes Prediction AI', desc: 'Diabetes risk assessment', input: 'Medical Data', output: 'Diabetic / Pre-diabetic / Normal', type: 'Classification', price: '$$$$$', status: 'Active' },
-    { id: 11, name: '🫁 Pneumonia Detection AI', desc: 'Pneumonia detection', input: 'Chest X-ray', output: 'Pneumonia / Normal / Viral', type: 'Classification', price: '$$$$$', status: 'Active' },
-    { id: 12, name: '🦟 Malaria Detection AI', desc: 'Blood smear analysis', input: 'Blood Smear Image', output: 'Infected / Uninfected', type: 'Binary Classification', price: '$$$$$', status: 'Active' },
-    { id: 13, name: '🦟 Dengue Detection AI', desc: 'Dengue virus detection', input: 'Blood Test', output: 'Dengue / Non-Dengue', type: 'Binary Classification', price: '$$$$$', status: 'Active' },
-    { id: 14, name: '🏥 Kidney Disease AI', desc: 'Kidney disease assessment', input: 'Lab Results', output: 'Healthy / Stage 1 / Stage 2 / Stage 3 / Stage 4 / Stage 5', type: 'Severity Classification', price: '$$$$$', status: 'Active' },
-    { id: 15, name: '👂 Ear Infection Detection AI', desc: 'Ear infection detection', input: 'Ear Image', output: 'Infected / Healthy / Inflamed', type: 'Classification', price: '$$$$$', status: 'Active' },
-    { id: 16, name: '👃 Nasal Polyp Detection AI', desc: 'Nasal abnormality detection', input: 'Nasal Image', output: 'Polyp Detected / Normal / Deviated Septum', type: 'Detection', price: '$$$$$', status: 'Active' },
-    { id: 17, name: '🦷 Oral Cancer Detection AI', desc: 'Oral cancer detection', input: 'Mouth Image', output: 'Cancer / Benign / Suspicious', type: 'Classification', price: '$$$$$', status: 'Active' },
-    { id: 18, name: '🗣️ Pharyngitis Detection AI', desc: 'Throat infection detection', input: 'Throat Image', output: 'Bacterial / Viral / Normal', type: 'Classification', price: '$$$$$', status: 'Active' }
+    { id: 3, name: '🩹 Skin Cancer Detection AI', desc: 'Lesion classification', input: 'Skin Image', output: 'Melanoma / Benign / Basal Cell', type: 'Multi-class Classification', price: '$$$$$', status: 'Active' },
+    { id: 4, name: '💉 Diabetes Prediction AI', desc: 'Diabetes risk assessment', input: 'Medical Data', output: 'Diabetic / Pre-diabetic / Normal', type: 'Classification', price: '$$$$$', status: 'Active' },
+    { id: 5, name: '🫁 Pneumonia Detection AI', desc: 'Pneumonia detection', input: 'Chest X-ray', output: 'Pneumonia / Normal / Viral', type: 'Classification', price: '$$$$$', status: 'Active' },
+    { id: 6, name: '🦟 Malaria Detection AI', desc: 'Blood smear analysis', input: 'Blood Smear Image', output: 'Infected / Uninfected', type: 'Binary Classification', price: '$$$$$', status: 'Active' },
+    { id: 7, name: '🦟 Dengue Detection AI', desc: 'Dengue virus detection', input: 'Blood Test', output: 'Dengue / Non-Dengue', type: 'Binary Classification', price: '$$$$$', status: 'Active' },
+    { id: 8, name: '👂 Ear Infection Detection AI', desc: 'Ear infection detection', input: 'Ear Image', output: 'Infected / Healthy / Inflamed', type: 'Classification', price: '$$$$$', status: 'Active' },
+    { id: 9, name: '👃 Nasal Polyp Detection AI', desc: 'Nasal abnormality detection', input: 'Nasal Image', output: 'Polyp Detected / Normal / Deviated Septum', type: 'Detection', price: '$$$$$', status: 'Active' },
+    { id: 10, name: '🗣️ Throat Analysis AI', desc: 'Throat disease detection', input: 'Throat Image', output: 'Normal / Infected / Inflamed', type: 'Classification', price: '$$$$$', status: 'Active' },
+    { id: 11, name: '🦷 Oral Cancer Detection AI', desc: 'Oral cancer detection', input: 'Mouth Image', output: 'Cancer / Benign / Suspicious', type: 'Classification', price: '$$$$$', status: 'Active' },
+    { id: 12, name: '🗣️ Pharyngitis Detection AI', desc: 'Throat infection detection', input: 'Throat Image', output: 'Bacterial / Viral / Normal', type: 'Classification', price: '$$$$$', status: 'Active' },
+    { id: 13, name: '🔬 Colorectal Cancer AI', desc: 'Tissue classification', input: 'Histopathology Image', output: 'Polyp / Normal / Suspicious', type: 'Detection', price: '$$$$$', status: 'Active' },
+    { id: 14, name: '🫁 Lung Disease Detection AI', desc: 'Lung nodule detection', input: 'Chest Image', output: 'Nodule / Normal / Suspicious', type: 'Detection', price: '$$$$$', status: 'Active' },
+    { id: 15, name: '❤️ 1-Lead ECG AI', desc: 'Single-lead ECG analysis', input: '1-Lead ECG', output: 'Normal / Abnormal / Arrhythmia', type: 'Classification', price: '$$$$$', status: 'Active' },
+    { id: 16, name: '❤️ 12-Lead ECG AI', desc: 'Comprehensive ECG analysis', input: '12-Lead ECG', output: 'Normal / Abnormal / Arrhythmia', type: 'Classification', price: '$$$$$', status: 'Active' }
   ]);
 
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -576,18 +574,7 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="border border-gray-200 p-4 rounded-lg">
-                  <h4 className="font-bold text-gray-900 text-lg">9. Stroke Prediction</h4>
-                  <p className="text-gray-600 text-sm mt-1">Predicts stroke risk from patient data</p>
-                  <div className="grid grid-cols-4 gap-3 mt-3 bg-gray-50 p-3 rounded text-sm">
-                    <div><p className="font-semibold text-gray-700">Input</p><p>Patient Data</p></div>
-                    <div><p className="font-semibold text-gray-700">Type</p><p>Prediction</p></div>
-                    <div><p className="font-semibold text-gray-700">Price</p><p>$$$$</p></div>
-                    <div><p className="font-semibold text-gray-700">Status</p><p className="text-green-600">Active</p></div>
-                  </div>
-                </div>
-
-                <div className="border border-gray-200 p-4 rounded-lg">
-                  <h4 className="font-bold text-gray-900 text-lg">10. Diabetes Prediction</h4>
+                  <h4 className="font-bold text-gray-900 text-lg">4. Diabetes Prediction</h4>
                   <p className="text-gray-600 text-sm mt-1">Predicts diabetes risk based on medical indicators</p>
                   <div className="grid grid-cols-4 gap-3 mt-3 bg-gray-50 p-3 rounded text-sm">
                     <div><p className="font-semibold text-gray-700">Input</p><p>Medical Data</p></div>
@@ -631,18 +618,7 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="border border-gray-200 p-4 rounded-lg">
-                  <h4 className="font-bold text-gray-900 text-lg">14. Kidney Disease Detection</h4>
-                  <p className="text-gray-600 text-sm mt-1">Assesses kidney disease progression</p>
-                  <div className="grid grid-cols-4 gap-3 mt-3 bg-gray-50 p-3 rounded text-sm">
-                    <div><p className="font-semibold text-gray-700">Input</p><p>Lab Results</p></div>
-                    <div><p className="font-semibold text-gray-700">Type</p><p>Classification</p></div>
-                    <div><p className="font-semibold text-gray-700">Price</p><p>$$</p></div>
-                    <div><p className="font-semibold text-gray-700">Status</p><p className="text-green-600">Active</p></div>
-                  </div>
-                </div>
-
-                <div className="border border-gray-200 p-4 rounded-lg">
-                  <h4 className="font-bold text-gray-900 text-lg">15. Ear Infection Detection</h4>
+                  <h4 className="font-bold text-gray-900 text-lg">8. Ear Infection Detection</h4>
                   <p className="text-gray-600 text-sm mt-1">Identifies ear infections and inflammation</p>
                   <div className="grid grid-cols-4 gap-3 mt-3 bg-gray-50 p-3 rounded text-sm">
                     <div><p className="font-semibold text-gray-700">Input</p><p>Ear Image</p></div>

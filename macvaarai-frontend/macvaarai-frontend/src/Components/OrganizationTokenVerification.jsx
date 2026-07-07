@@ -19,12 +19,12 @@ const OrganizationTokenVerification = () => {
   // Organization data mapping
   const organizationData = {
     'vijay': {
-      fullName: 'Vijay Care',
+      fullName: 'Vijay Care AI',
       logo: 'http://localhost:8000/LOGO/Vijay.jpeg',
       color: 'from-yellow-500 to-yellow-700'
     },
     'bjp': {
-      fullName: 'BJP Care',
+      fullName: 'BJP Care AI',
       logo: 'http://localhost:8000/LOGO/BJP.jpeg',
       color: 'from-orange-500 to-orange-700'
     },
@@ -34,7 +34,7 @@ const OrganizationTokenVerification = () => {
       color: 'from-blue-600 to-blue-800'
     },
     'cbn': {
-      fullName: 'CBN Care',
+      fullName: 'CBN Care AI',
       logo: 'http://localhost:8000/LOGO/CBN.jpg',
       color: 'from-yellow-200 to-yellow-400'
     }

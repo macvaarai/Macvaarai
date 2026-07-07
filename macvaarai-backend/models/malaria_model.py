@@ -23,7 +23,7 @@ def preprocess_malaria_image(image_bytes):
 def predict_malaria(image_bytes):
     """
     Predict malaria infection status from an image.
-    Returns label, confidence, and a readable summary.
+    Returns label, confidence, all predictions, and a readable summary.
     """
     input_array = preprocess_malaria_image(image_bytes)
     prediction = model.predict(input_array)[0][0]
@@ -36,8 +36,15 @@ def predict_malaria(image_bytes):
         label = MALARIA_LABELS[1]
         confidence = float(prediction)
 
+    # Create all_predictions dictionary
+    all_predictions = {
+        MALARIA_LABELS[0]: float(1 - prediction),
+        MALARIA_LABELS[1]: float(prediction)
+    }
+
     return {
         "label": label,
         "confidence": confidence,
+        "all_predictions": all_predictions,
         "summary": f"Malaria detection: {label} ({confidence*100:.2f}%)"
     }

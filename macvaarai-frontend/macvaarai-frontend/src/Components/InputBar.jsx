@@ -18,14 +18,13 @@ const InputBar = ({ isAiResponding, addMessage, updateMessage }) => {
   // Map cardPath → backend model_type
   const mapCardPathToModelType = (cardPath) => {
     switch (cardPath) {
-      case "heart-ai-1-lead": return "1lead";
-      case "heart-ai-12-lead": return "12lead";
+      case "heart-ai-1-lead": return "onelead";
+      case "heart-ai-12-lead": return "twelvelead";
       case "skin-ai": return "skin";
       case "eye-ai": return "eye";
       case "lungs-ai": return "lung";
       case "ear-ai": return "ear";
       case "malaria-ai": return "malaria";
-      case "cervix-ai": return "cervix";
       case "pneumonia-ai": return "pneumonia";
       case "diabetes-ai": return "diabetes";
       case "throat-ai": return "throat";
@@ -33,6 +32,8 @@ const InputBar = ({ isAiResponding, addMessage, updateMessage }) => {
       case "covid-19-ai": return "covid";
       case "dengue-ai": return "dengue";
       case "nose-ai": return "nose";
+      case "pharyngitis-ai": return "pharyngitis";
+      case "colorectal-ai": return "colorectal";
       default: return "none";
     }
   };

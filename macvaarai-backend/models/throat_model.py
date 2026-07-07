@@ -25,9 +25,10 @@ transform = transforms.Compose([
 ])
 
 
-def predict_throat_cancer(image_bytes):
+def predict_throat(image_bytes):
     """
-    Predict throat cancer condition from input image bytes
+    Predict throat condition from input image bytes
+    Returns label, confidence, all predictions, and summary
     """
     # Load and preprocess image
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -39,9 +40,17 @@ def predict_throat_cancer(image_bytes):
         top_idx = torch.argmax(probabilities).item()
         confidence = probabilities[top_idx].item()
 
+    # Create all_predictions dictionary
+    all_predictions = {}
+    for i, label in enumerate(THROAT_LABELS):
+        all_predictions[label] = float(probabilities[i].item())
+
     return {
         "label": THROAT_LABELS[top_idx],
         "confidence": float(confidence),
-        "summary": f"Throat cancer diagnosis: {THROAT_LABELS[top_idx]} ({confidence*100:.2f}%)"
+        "all_predictions": all_predictions,
+        "summary": f"Throat analysis: {THROAT_LABELS[top_idx]} ({confidence*100:.2f}%)"
     }
 
+# Keep old name for backward compatibility
+predict_throat_cancer = predict_throat

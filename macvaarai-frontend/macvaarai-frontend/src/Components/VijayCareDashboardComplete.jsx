@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut, Plus, Trash2, Edit2, Copy, CheckCircle, Building2, Users, BarChart3, Settings, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import ModelDiagnosticChatbot from './ModelDiagnosticChatbot';
+import ModelDiagnosticChatbot from './ModelDiagnosticChatbotClean';
+import StaffManagement from './StaffManagement';
+import { AI_MODELS } from '../data/models';
 
 const VijayCareDashboardComplete = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -18,22 +20,28 @@ const VijayCareDashboardComplete = () => {
     admin_name: '', admin_email: '', num_doctors: 0, num_beds: 0, allocated_models: []
   });
 
+  const [schools, setSchools] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [policeOrgs, setPoliceOrgs] = useState([]);
+  const [womenOrgs, setWomenOrgs] = useState([]);
+  const [offices, setOffices] = useState([]);
+
+  const [showSchoolForm, setShowSchoolForm] = useState(false);
+  const [showDistrictForm, setShowDistrictForm] = useState(false);
+  const [showPoliceForm, setShowPoliceForm] = useState(false);
+  const [showWomenForm, setShowWomenForm] = useState(false);
+  const [showOfficeForm, setShowOfficeForm] = useState(false);
+
+  const [partnerForm, setPartnerForm] = useState({
+    name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '',
+    contact_name: '', contact_email: '', members: 0, allocated_models: []
+  });
+
   const apiUrl = 'http://localhost:8000';
   const navigate = useNavigate();
-  const orgName = 'Vijay Care';
+  const orgName = 'Vijay Care AI';
   const orgToken = localStorage.getItem('orgToken') || 'ORG_VIJAY_CARE_6E1455EE';
-
-  const allModels = [
-    { id: 'eye', name: 'Eye Disease', icon: '👁️', price: '$$$$$' },
-    { id: 'covid', name: 'COVID-19', icon: '🦠', price: '$$$$$' },
-    { id: 'diabetes', name: 'Diabetes', icon: '💉', price: '$$$$$' },
-    { id: 'pneumonia', name: 'Pneumonia', icon: '🫁', price: '$$$$$' },
-    { id: 'ecg', name: 'ECG', icon: '❤️', price: '$$$$$' },
-    { id: 'stroke', name: 'Stroke', icon: '🧠', price: '$$$$$' },
-    { id: 'colorectal', name: 'Colorectal', icon: '🏥', price: '$$$$$' },
-    { id: 'oral', name: 'Oral Cancer', icon: '🦷', price: '$$$$$' },
-    { id: 'lung', name: 'Lung', icon: '🫁', price: '$$$$$' }
-  ];
+  const allModels = AI_MODELS;
 
   useEffect(() => {
     fetchOrgData();
@@ -46,14 +54,24 @@ const VijayCareDashboardComplete = () => {
       const orgData = await orgRes.json();
 
       if (orgData.status === 'success') {
-        const vijayOrg = orgData.organizations.find(o => o.name === 'Vijay Care');
+        const vijayOrg = orgData.organizations.find(o => o.name === 'Vijay Care AI');
         if (vijayOrg) {
           let models = vijayOrg.subscribed_models || [];
           if (typeof models === 'string') {
             try { models = JSON.parse(models); } catch { models = []; }
           }
+          // If no models, set all 18 models by default
+          if (!models || models.length === 0) {
+            models = allModels.map(m => m.id);
+          }
           setSubscribedModels(models);
+        } else {
+          // If organization not found, set all models by default
+          setSubscribedModels(allModels.map(m => m.id));
         }
+      } else {
+        // If fetch fails, set all models by default
+        setSubscribedModels(allModels.map(m => m.id));
       }
 
       const hospitalsRes = await fetch(`${apiUrl}/admin/hospitals`);
@@ -63,6 +81,8 @@ const VijayCareDashboardComplete = () => {
       }
     } catch (err) {
       console.error('Error:', err);
+      // Set all models by default on error
+      setSubscribedModels(allModels.map(m => m.id));
     } finally {
       setLoading(false);
     }
@@ -166,8 +186,8 @@ const VijayCareDashboardComplete = () => {
             <div className="flex items-center gap-4">
               <img src="/logos/Vijay.jpeg" alt="Logo" className="h-16 w-16 rounded-full border-4 border-yellow-500 object-cover" />
               <div>
-                <h1 className="text-4xl font-bold text-yellow-400">VIJAY CARE</h1>
-                <p className="text-yellow-300">Healthcare Portal</p>
+                <h1 className="text-4xl font-bold text-yellow-400">VIJAY CARE AI</h1>
+                <p className="text-yellow-300">AI-Driven Early Disease Detection & Identification</p>
               </div>
             </div>
             <button onClick={handleLogout} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold">
@@ -179,21 +199,27 @@ const VijayCareDashboardComplete = () => {
 
       {/* NAVIGATION */}
       <div className="bg-gray-800 border-b-2 border-yellow-500 sticky top-0 z-10 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 flex gap-8">
-          {[
-            { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-            { id: 'hospitals', label: 'Hospitals', icon: Building2 },
-            { id: 'models', label: 'Models', icon: Zap },
-            { id: 'staff', label: 'Staff', icon: Users },
-            { id: 'settings', label: 'Settings', icon: Settings }
-          ].map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-4 py-4 border-b-3 font-bold transition ${activeTab === tab.id ? 'border-yellow-500 text-yellow-400 bg-gray-700' : 'border-transparent text-gray-400 hover:text-yellow-400'}`}>
-                <Icon size={20} /> {tab.label}
+        <div className="max-w-7xl mx-auto px-6 flex items-center gap-2">
+          <button className="text-yellow-400 hover:text-yellow-300 font-bold text-xl px-2 py-4">&lt;</button>
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+            {[
+              { id: 'dashboard', label: 'Dashboard' },
+              { id: 'hospitals', label: 'Hospital AI' },
+              { id: 'schools', label: 'School AI' },
+              { id: 'districts', label: 'District AI' },
+              { id: 'police', label: 'Police AI' },
+              { id: 'women', label: 'Women AI' },
+              { id: 'offices', label: 'Office AI' },
+              { id: 'models', label: 'Models' },
+              { id: 'staff', label: 'Staff' },
+              { id: 'settings', label: 'Settings' }
+            ].map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-4 border-b-3 font-bold transition whitespace-nowrap ${activeTab === tab.id ? 'border-yellow-500 text-yellow-400 bg-gray-700' : 'border-transparent text-gray-400 hover:text-yellow-400'}`}>
+                {tab.label}
               </button>
-            );
-          })}
+            ))}
+          </div>
+          <button className="text-yellow-400 hover:text-yellow-300 font-bold text-xl px-2 py-4">&gt;</button>
         </div>
       </div>
 
@@ -391,6 +417,106 @@ const VijayCareDashboardComplete = () => {
           </div>
         )}
 
+        {/* SCHOOLS */}
+        {activeTab === 'schools' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-bold text-blue-400">🎓 School AI</h2>
+              <button onClick={() => setShowSchoolForm(!showSchoolForm)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2"><Plus size={20} /> Add School</button>
+            </div>
+
+            {showSchoolForm && (
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-blue-500 space-y-6">
+                <div><h3 className="text-lg font-bold text-blue-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-blue-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-blue-300 mb-4">📝 ENTER SCHOOL DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="School Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Principal/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Students" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setSchools([...schools, {...partnerForm, id: Date.now()}]); setShowSchoolForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-bold">Add School</button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {schools.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-blue-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-blue-300">🎓 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setSchools(schools.filter(s => s.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} students</p><p className="text-blue-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
+            </div>
+          </div>
+        )}
+
+        {/* DISTRICTS */}
+        {activeTab === 'districts' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-bold text-green-400">📍 District AI</h2>
+              <button onClick={() => setShowDistrictForm(!showDistrictForm)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2"><Plus size={20} /> Add District</button>
+            </div>
+
+            {showDistrictForm && (
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-green-500 space-y-6">
+                <div><h3 className="text-lg font-bold text-green-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-green-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-green-300 mb-4">📝 ENTER DISTRICT DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="District Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Collector/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Population/Coverage" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setDistricts([...districts, {...partnerForm, id: Date.now()}]); setShowDistrictForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded font-bold">Add District</button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {districts.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-green-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-green-300">📍 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setDistricts(districts.filter(d => d.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} population</p><p className="text-green-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
+            </div>
+          </div>
+        )}
+
+        {/* POLICE */}
+        {activeTab === 'police' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-bold text-red-400">👮 Police AI</h2>
+              <button onClick={() => setShowPoliceForm(!showPoliceForm)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2"><Plus size={20} /> Add Police</button>
+            </div>
+
+            {showPoliceForm && (
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-red-500 space-y-6">
+                <div><h3 className="text-lg font-bold text-red-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-red-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-red-300 mb-4">📝 ENTER POLICE DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="Police Department *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Chief/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Officers" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setPoliceOrgs([...policeOrgs, {...partnerForm, id: Date.now()}]); setShowPoliceForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded font-bold">Add Police</button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {policeOrgs.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-red-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-red-300">👮 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setPoliceOrgs(policeOrgs.filter(p => p.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} officers</p><p className="text-red-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
+            </div>
+          </div>
+        )}
+
+        {/* WOMEN */}
+        {activeTab === 'women' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-bold text-pink-400">👩 Women AI</h2>
+              <button onClick={() => setShowWomenForm(!showWomenForm)} className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2"><Plus size={20} /> Add Women Organization</button>
+            </div>
+
+            {showWomenForm && (
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-pink-500 space-y-6">
+                <div><h3 className="text-lg font-bold text-pink-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-pink-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-pink-300 mb-4">📝 ENTER WOMEN ORG DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="Organization Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Director/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Members" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setWomenOrgs([...womenOrgs, {...partnerForm, id: Date.now()}]); setShowWomenForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-3 rounded font-bold">Add Women Organization</button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {womenOrgs.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-pink-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-pink-300">👩 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setWomenOrgs(womenOrgs.filter(w => w.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} members</p><p className="text-pink-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
+            </div>
+          </div>
+        )}
+
+        {/* OFFICES */}
+        {activeTab === 'offices' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-bold text-indigo-400">🏢 Office AI</h2>
+              <button onClick={() => setShowOfficeForm(!showOfficeForm)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2"><Plus size={20} /> Add Office</button>
+            </div>
+
+            {showOfficeForm && (
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-indigo-500 space-y-6">
+                <div><h3 className="text-lg font-bold text-indigo-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-indigo-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-indigo-300 mb-4">📝 ENTER OFFICE DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="Office Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Manager/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Employees" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setOffices([...offices, {...partnerForm, id: Date.now()}]); setShowOfficeForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded font-bold">Add Office</button>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {offices.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-indigo-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-indigo-300">🏢 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setOffices(offices.filter(o => o.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} employees</p><p className="text-indigo-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
+            </div>
+          </div>
+        )}
+
         {/* MODELS */}
         {activeTab === 'models' && (
           <div className="space-y-6">
@@ -417,12 +543,7 @@ const VijayCareDashboardComplete = () => {
 
         {/* STAFF */}
         {activeTab === 'staff' && (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-yellow-400">Staff Management</h2>
-            <div className="bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-700">
-              <p className="text-gray-300">Staff management features coming soon...</p>
-            </div>
-          </div>
+          <StaffManagement />
         )}
 
         {/* SETTINGS */}

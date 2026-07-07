@@ -41,22 +41,20 @@ const AIModelsDashboard = () => {
     const descriptions = {
       eye: 'Detects diabetic retinopathy and eye diseases from retinal images',
       covid: 'Analyzes chest X-rays to detect COVID-19 infections',
-      ecg: 'Analyzes heart rhythm patterns from ECG tracings',
-      skin: 'Identifies skin cancer and lesion classification',
-      tb: 'Detects tuberculosis from chest radiographs',
-      throat: 'Analyzes throat images for disease detection',
-      lung: 'Detects lung nodules and cancer indicators',
-      colorectal: 'Identifies colorectal polyps and abnormalities',
-      stroke: 'Predicts stroke risk from patient data',
-      diabetes: 'Predicts diabetes risk based on medical indicators',
       pneumonia: 'Detects pneumonia from chest X-rays',
+      skin: 'Identifies skin cancer and lesion classification',
       malaria: 'Identifies malaria parasites from blood smears',
       dengue: 'Detects dengue virus from blood tests',
-      kidney: 'Assesses kidney disease progression',
+      diabetes: 'Predicts diabetes risk based on medical indicators',
       ear: 'Identifies ear infections and inflammation',
       nose: 'Detects nasal polyps and abnormalities',
+      throat: 'Analyzes throat images for disease detection',
       oral: 'Identifies oral cancer and lesions',
-      pharyngitis: 'Detects pharyngitis and throat infections'
+      pharyngitis: 'Detects pharyngitis and throat infections',
+      colorectal: 'Identifies colorectal polyps and abnormalities',
+      lung: 'Detects lung nodules and cancer indicators',
+      onelead: 'Analyzes single-lead ECG for cardiac abnormalities',
+      twelvelead: 'Comprehensive 12-lead ECG analysis for heart conditions'
     };
     return descriptions[id] || 'AI Medical Diagnostic Model';
   };
@@ -65,22 +63,20 @@ const AIModelsDashboard = () => {
     const types = {
       eye: 'Retinal Image',
       covid: 'Chest X-ray',
-      ecg: 'ECG Image',
-      skin: 'Lesion Photo',
-      tb: 'Chest X-ray',
-      throat: 'Throat Image',
-      lung: 'Chest Image',
-      colorectal: 'Endoscopy Image',
-      stroke: 'Patient Data',
-      diabetes: 'Medical Data',
       pneumonia: 'Chest X-ray',
+      skin: 'Lesion Photo',
       malaria: 'Blood Smear',
       dengue: 'Blood Test',
-      kidney: 'Lab Results',
+      diabetes: 'Medical Data',
       ear: 'Ear Image',
       nose: 'Nasal Image',
+      throat: 'Throat Image',
       oral: 'Mouth Image',
-      pharyngitis: 'Throat Image'
+      pharyngitis: 'Throat Image',
+      colorectal: 'Endoscopy Image',
+      lung: 'Chest Image',
+      onelead: '1-Lead ECG',
+      twelvelead: '12-Lead ECG'
     };
     return types[id] || 'Medical Image';
   };

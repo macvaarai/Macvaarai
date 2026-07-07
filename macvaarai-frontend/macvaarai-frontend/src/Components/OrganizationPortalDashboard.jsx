@@ -556,34 +556,32 @@ const OrganizationPortalDashboard = () => {
                 <div className="text-4xl font-bold text-green-600 mb-2">Free</div>
                 <p className="text-gray-600 mb-4">Open-source diagnostic models</p>
                 <div className="text-sm text-gray-700">
-                  <p>Diabetes, Pneumonia, Malaria, Dengue, Kidney Disease, Ear, Nose, Oral, Pharyngitis</p>
+                  <p>Diabetes, Pneumonia, Malaria, Dengue, Ear, Nose, Oral, Pharyngitis</p>
                 </div>
               </div>
             </div>
 
-            {/* All 18 Models */}
+            {/* All 16 Models */}
             <div className="mt-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">Complete AI Model Catalog (18 Models)</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">Complete AI Model Catalog (16 Models)</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   { name: 'Eye Disease Detection', type: 'Premium' },
                   { name: 'COVID-19 Detection', type: 'Premium' },
-                  { name: 'ECG Analysis', type: 'Premium' },
+                  { name: 'Pneumonia Detection', type: 'Premium' },
                   { name: 'Skin Cancer Detection', type: 'Premium' },
-                  { name: 'Tuberculosis Detection', type: 'Premium' },
-                  { name: 'Diabetes Prediction', type: 'Free' },
-                  { name: 'Pneumonia Detection', type: 'Free' },
-                  { name: 'Malaria Detection', type: 'Free' },
-                  { name: 'Dengue Detection', type: 'Free' },
-                  { name: 'Kidney Disease', type: 'Free' },
+                  { name: 'Malaria Detection', type: 'Premium' },
+                  { name: 'Dengue Detection', type: 'Premium' },
+                  { name: 'Diabetes Prediction', type: 'Premium' },
+                  { name: 'Ear Infection', type: 'Premium' },
+                  { name: 'Nasal Analysis', type: 'Premium' },
                   { name: 'Throat Analysis', type: 'Premium' },
-                  { name: 'Ear Infection', type: 'Free' },
-                  { name: 'Nasal Analysis', type: 'Free' },
-                  { name: 'Oral Cancer', type: 'Free' },
-                  { name: 'Lung Analysis', type: 'Premium' },
-                  { name: 'Pharyngitis', type: 'Free' },
+                  { name: 'Oral Cancer', type: 'Premium' },
+                  { name: 'Pharyngitis', type: 'Premium' },
                   { name: 'Colorectal', type: 'Premium' },
-                  { name: 'Stroke Prediction', type: 'Premium' }
+                  { name: 'Lung Analysis', type: 'Premium' },
+                  { name: '1-Lead ECG Analysis', type: 'Premium' },
+                  { name: '12-Lead ECG Analysis', type: 'Premium' }
                 ].map((model, idx) => (
                   <div
                     key={idx}

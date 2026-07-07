@@ -27,7 +27,8 @@ transform = transforms.Compose([
 
 def predict_oral(image_bytes):
     """
-    Predict throat cancer condition from input image bytes
+    Predict oral condition from input image bytes
+    Returns label, confidence, all predictions, and summary
     """
     # Load and preprocess image
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -39,9 +40,15 @@ def predict_oral(image_bytes):
         top_idx = torch.argmax(probabilities).item()
         confidence = probabilities[top_idx].item()
 
+    # Create all_predictions dictionary
+    all_predictions = {}
+    for i, label in enumerate(oral_LABELS):
+        all_predictions[label] = float(probabilities[i].item())
+
     return {
         "label": oral_LABELS[top_idx],
         "confidence": float(confidence),
-        "summary": f"oral cancer diagnosis: {oral_LABELS[top_idx]} ({confidence*100:.2f}%)"
+        "all_predictions": all_predictions,
+        "summary": f"Oral analysis: {oral_LABELS[top_idx]} ({confidence*100:.2f}%)"
     }
 

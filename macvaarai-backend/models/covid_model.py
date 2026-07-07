@@ -70,11 +70,15 @@ def predict_covid(image_bytes):
 
         diagnosis = COVID_LABELS[idx]
 
+        # Create all_predictions dictionary
+        all_predictions = {}
+        for i, label in enumerate(COVID_LABELS):
+            all_predictions[label] = float(prediction[i])
+
         return {
             "label": diagnosis,
             "confidence": confidence,
-            "probability_normal": float(prediction[0]),
-            "probability_covid": float(prediction[1]),
+            "all_predictions": all_predictions,
             "summary": f"Chest X-ray Analysis: {diagnosis} ({confidence*100:.1f}% confidence)"
         }
     except Exception as e:

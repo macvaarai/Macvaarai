@@ -494,10 +494,10 @@ const OrganizationManagement = () => {
               ) : (
                 organizations.map((org, index) => {
                   const logoMap = {
-                    'Vijay Care': '/logos/Vijay.jpeg',
-                    'Modi Care': '/logos/Modi.jpeg',
-                    'CBN Care': '/logos/CBN.jpg',
-                    'BJP Care': '/logos/BJP.jpeg'
+                    'Vijay Care AI': '/logos/Vijay.jpeg',
+                    'Modi Care AI': '/logos/Modi.jpeg',
+                    'CBN Care AI': '/logos/CBN.jpg',
+                    'BJP Care AI': '/logos/BJP.jpeg'
                   };
                   const logoPath = logoMap[org.name];
 
