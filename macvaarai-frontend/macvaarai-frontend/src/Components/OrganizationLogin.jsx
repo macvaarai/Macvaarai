@@ -67,7 +67,7 @@ const OrganizationLogin = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/org-admin/login', {
+      const response = await fetch('http://localhost:8000/organization/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentialsForm)
@@ -75,18 +75,18 @@ const OrganizationLogin = () => {
 
       const data = await response.json();
 
-      if (data.status === 'success' && data.token) {
+      if (data.status === 'success') {
         setSuccess('Login successful! Redirecting...');
-        localStorage.setItem('orgAdminToken', data.token);
-        localStorage.setItem('orgId', data.organization_id);
-        localStorage.setItem('orgName', data.organization_name);
+        localStorage.setItem('orgToken', credentialsForm.email);
+        localStorage.setItem('orgId', data.org_id);
+        localStorage.setItem('orgName', data.org_name);
         localStorage.setItem('orgEmail', data.email);
-        localStorage.setItem('adminName', data.admin_name || '');
-        localStorage.setItem('subscribedModels', JSON.stringify(data.subscribed_models || []));
+        localStorage.setItem('vijayToken', credentialsForm.email);
+        localStorage.setItem('vijayOrgName', data.org_name);
 
-        setTimeout(() => navigate('/org/portal'), 1500);
+        setTimeout(() => navigate('/vijay-care/dashboard'), 1500);
       } else {
-        setError(data.error || 'Invalid email or password');
+        setError(data.message || 'Invalid email or password');
       }
     } catch (err) {
       setError('Error: ' + err.message);

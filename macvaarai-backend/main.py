@@ -490,6 +490,33 @@ async def admin_login(request: Request):
         return {"status": "error", "message": str(e)}
 
 
+@app.post("/organization/login")
+async def organization_login(request: Request):
+    """Organization login - email/password authentication"""
+    try:
+        data = await request.json()
+        email = data.get("email", "")
+        password = data.get("password", "")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, email, password FROM organizations WHERE email = ? AND password = ?", (email, password))
+        org = cursor.fetchone()
+        conn.close()
+
+        if org:
+            return {
+                "status": "success",
+                "org_id": org["id"],
+                "org_name": org["name"],
+                "email": org["email"],
+                "message": f"Welcome {org['name']}"
+            }
+        return {"status": "error", "message": "Invalid credentials"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 @app.post("/admin/login-access-key")
 async def admin_login_access_key(access_key: str):
     """Login using access key (hospital admin)"""
