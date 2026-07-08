@@ -39,24 +39,66 @@ const AIModelsDashboard = () => {
 
   const getModelDescription = (id) => {
     const descriptions = {
-      eye: 'Detects diabetic retinopathy and eye diseases from retinal images',
-      covid: 'Analyzes chest X-rays to detect COVID-19 infections',
-      pneumonia: 'Detects pneumonia from chest X-rays',
-      skin: 'Identifies skin cancer and lesion classification',
-      malaria: 'Identifies malaria parasites from blood smears',
-      dengue: 'Detects dengue virus from blood tests',
-      diabetes: 'Predicts diabetes risk based on medical indicators',
-      ear: 'Identifies ear infections and inflammation',
-      nose: 'Detects nasal polyps and abnormalities',
-      throat: 'Analyzes throat images for disease detection',
-      oral: 'Identifies oral cancer and lesions',
-      pharyngitis: 'Detects pharyngitis and throat infections',
-      colorectal: 'Identifies colorectal polyps and abnormalities',
-      lung: 'Detects lung nodules and cancer indicators',
-      onelead: 'Analyzes single-lead ECG for cardiac abnormalities',
-      twelvelead: 'Comprehensive 12-lead ECG analysis for heart conditions'
+      eye: 'Screen vision health and detect eye-related issues using AI.',
+      covid: 'Chest X-ray analysis and COVID-19 screening using machine learning.',
+      pneumonia: 'Screen and detect early pneumonia risks with AI.',
+      skin: 'Analyze skin conditions, rashes, and moles for early detection and advice.',
+      malaria: 'Screen for malaria symptoms and provide early advice.',
+      dengue: 'Screen for dengue symptoms and provide AI-driven advice.',
+      diabetes: 'Monitor glucose trends, risk factors, and receive diabetic care advice.',
+      ear: 'Screen for common ear issues and receive hearing health suggestions.',
+      nose: 'AI-driven nasal health checks for allergies, congestion, and sinus care.',
+      throat: 'Assess throat symptoms and receive tailored advice for throat health.',
+      oral: 'Screen oral hygiene, gum disease, and mouth health with AI.',
+      pharyngitis: 'Pharyngitis classification and treatment recommendations.',
+      colorectal: 'Colorectal lesion detection and analysis.',
+      lung: 'Screen for respiratory conditions and get lung health insights using AI.',
+      onelead: 'Quick ECG analysis using a single-lead input for early heart health screening.',
+      twelvelead: 'Comprehensive 12-lead ECG interpretation for advanced cardiac assessment.'
     };
     return descriptions[id] || 'AI Medical Diagnostic Model';
+  };
+
+  const getModelEmoji = (id) => {
+    const emojis = {
+      eye: '👁️',
+      covid: '🦠',
+      pneumonia: '🫁',
+      skin: '🩹',
+      malaria: '🦟',
+      dengue: '🦟',
+      diabetes: '💉',
+      ear: '👂',
+      nose: '👃',
+      throat: '🗣️',
+      oral: '🦷',
+      pharyngitis: '🗣️',
+      colorectal: '🔬',
+      lung: '🫁',
+      onelead: '❤️',
+      twelvelead: '❤️',
+      dental: '🦷',
+      heart: '❤️'
+    };
+    return emojis[id] || '🤖';
+  };
+
+  const getModelBorderColor = (index) => {
+    const colors = [
+      'border-red-500',
+      'border-orange-500',
+      'border-yellow-500',
+      'border-blue-500',
+      'border-cyan-500',
+      'border-green-500',
+      'border-purple-500',
+      'border-pink-500',
+      'border-red-600',
+      'border-blue-600',
+      'border-teal-500',
+      'border-indigo-500'
+    ];
+    return colors[index % colors.length];
   };
 
   const getInputType = (id) => {
@@ -106,39 +148,6 @@ const AIModelsDashboard = () => {
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-6 py-2 rounded-lg font-semibold transition ${
-            filter === 'all'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-          }`}
-        >
-          All Models ({allModels.length})
-        </button>
-        <button
-          onClick={() => setFilter('premium')}
-          className={`px-6 py-2 rounded-lg font-semibold transition ${
-            filter === 'premium'
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-          }`}
-        >
-          Premium ({premiumCount})
-        </button>
-        <button
-          onClick={() => setFilter('free')}
-          className={`px-6 py-2 rounded-lg font-semibold transition ${
-            filter === 'free'
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-          }`}
-        >
-          Free ({freeCount})
-        </button>
-      </div>
 
       {/* Error Message */}
       {error && (
@@ -158,69 +167,22 @@ const AIModelsDashboard = () => {
         </div>
       )}
 
-      {/* Models Grid */}
+      {/* Models Grid - 4 Columns */}
       {!loading && filteredModels.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredModels.map((model) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredModels.map((model, index) => (
             <div
               key={model.id}
-              className="bg-white rounded-lg border border-gray-300 overflow-hidden hover:shadow-lg transition"
+              className={`bg-gray-900 rounded-xl border-2 ${getModelBorderColor(index)} p-6 hover:shadow-xl transition cursor-pointer`}
             >
-              {/* Header */}
-              <div className={`px-6 py-4 ${model.premium ? 'bg-purple-600' : 'bg-green-600'} text-white`}>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold">{model.name}</h3>
-                    <p className="text-sm opacity-90 mt-1">{model.inputType}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      model.premium ? 'bg-white text-purple-600' : 'bg-white text-green-600'
-                    }`}>
-                      {model.premium ? '$$$$' : 'FREE'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              {/* Emoji Icon */}
+              <div className="text-5xl mb-4">{getModelEmoji(model.id)}</div>
 
-              {/* Body */}
-              <div className="px-6 py-4 space-y-3">
-                {/* Description */}
-                <p className="text-sm text-gray-700">{model.description}</p>
+              {/* Title */}
+              <h3 className="text-xl font-bold text-white mb-3">{model.name}</h3>
 
-                {/* Details */}
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={16} className="text-green-600" />
-                    <span className="text-gray-700">
-                      <strong>Type:</strong> {model.premium ? 'Premium' : 'Free'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={16} className="text-green-600" />
-                    <span className="text-gray-700">
-                      <strong>Input:</strong> {model.inputType}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Zap size={16} className="text-yellow-600" />
-                    <span className="text-gray-700">
-                      <strong>Status:</strong> <span className="text-green-600 font-semibold">Active</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                <button className={`w-full py-2 rounded-lg font-semibold transition ${
-                  model.premium
-                    ? 'bg-purple-600 text-white hover:bg-purple-700'
-                    : 'bg-green-600 text-white hover:bg-green-700'
-                }`}>
-                  {model.premium ? 'Premium Model' : 'Available Model'}
-                </button>
-              </div>
+              {/* Description */}
+              <p className="text-gray-300 text-sm leading-relaxed">{model.description}</p>
             </div>
           ))}
         </div>
@@ -229,30 +191,7 @@ const AIModelsDashboard = () => {
       {/* Empty State */}
       {!loading && filteredModels.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-600">No models found for this filter</p>
-        </div>
-      )}
-
-      {/* Stats Section */}
-      {!loading && allModels.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-            <p className="text-purple-800 font-semibold text-lg">{premiumCount}</p>
-            <p className="text-purple-700 text-sm">Premium Models</p>
-            <p className="text-xs text-purple-600 mt-2">Advanced diagnostics • $$$$</p>
-          </div>
-
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-            <p className="text-green-800 font-semibold text-lg">{freeCount}</p>
-            <p className="text-green-700 text-sm">Free Models</p>
-            <p className="text-xs text-green-600 mt-2">Essential diagnostics • Free</p>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <p className="text-blue-800 font-semibold text-lg">{allModels.length}</p>
-            <p className="text-blue-700 text-sm">Total Models</p>
-            <p className="text-xs text-blue-600 mt-2">All diagnostic tools available</p>
-          </div>
+          <p className="text-gray-600">No models found</p>
         </div>
       )}
     </div>

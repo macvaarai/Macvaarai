@@ -583,93 +583,31 @@ const VijayCareDashboardComplete = () => {
         {/* MODELS */}
         {activeTab === 'models' && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white mb-2">AI Manager</h2>
-            <p className="text-gray-400 text-lg mb-6">Powered by Macvaar AI</p>
+            <h2 className="text-3xl font-bold text-white mb-2">AI Medical Models</h2>
+            <p className="text-gray-400 text-lg mb-6">All {allModels.length} Available AI Diagnostic Models</p>
 
-            <div className="space-y-8">
-              {/* Main AI Models */}
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-4">🏥 Primary AI Models</h3>
-                <div className="grid grid-cols-4 gap-6">
-                  {allModels.slice(0, 4).map((model, idx) => {
-                    const borderColors = ['border-pink-500', 'border-orange-500', 'border-blue-500', 'border-cyan-500'];
-                    return (
-                      <div
-                        key={model.id}
-                        onClick={() => setSelectedModel(model)}
-                        className={`bg-gray-900 rounded-xl shadow-lg p-6 border-2 ${borderColors[idx]} hover:bg-gray-800 transition cursor-pointer transform hover:scale-105`}
-                      >
-                        <div className="text-5xl mb-3">{model.icon}</div>
-                        <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">{model.description}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+            {/* Single Grid - All Models */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {allModels.map((model, index) => {
+                const borderColors = [
+                  'border-red-500', 'border-orange-500', 'border-yellow-500', 'border-blue-500',
+                  'border-cyan-500', 'border-green-500', 'border-purple-500', 'border-pink-500',
+                  'border-red-600', 'border-blue-600', 'border-teal-500', 'border-indigo-500'
+                ];
+                const borderColor = borderColors[index % borderColors.length];
 
-              {/* Advanced Models */}
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-4">⚡ Advanced Models</h3>
-                <div className="grid grid-cols-4 gap-6">
-                  {allModels.slice(4, 8).map((model, idx) => {
-                    const borderColors = ['border-green-500', 'border-yellow-500', 'border-purple-500', 'border-red-500'];
-                    return (
-                      <div
-                        key={model.id}
-                        onClick={() => setSelectedModel(model)}
-                        className={`bg-gray-900 rounded-xl shadow-lg p-6 border-2 ${borderColors[idx]} hover:bg-gray-800 transition cursor-pointer transform hover:scale-105`}
-                      >
-                        <div className="text-5xl mb-3">{model.icon}</div>
-                        <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">{model.description}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Specialized Models */}
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-4">🔬 Specialized Models</h3>
-                <div className="grid grid-cols-4 gap-6">
-                  {allModels.slice(8, 12).map((model, idx) => {
-                    const borderColors = ['border-indigo-500', 'border-teal-500', 'border-lime-500', 'border-rose-500'];
-                    return (
-                      <div
-                        key={model.id}
-                        onClick={() => setSelectedModel(model)}
-                        className={`bg-gray-900 rounded-xl shadow-lg p-6 border-2 ${borderColors[idx]} hover:bg-gray-800 transition cursor-pointer transform hover:scale-105`}
-                      >
-                        <div className="text-5xl mb-3">{model.icon}</div>
-                        <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">{model.description}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Diagnostic Models */}
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-4">📊 Diagnostic Models</h3>
-                <div className="grid grid-cols-4 gap-6">
-                  {allModels.slice(12, 16).map((model, idx) => {
-                    const borderColors = ['border-blue-400', 'border-purple-400', 'border-pink-400', 'border-yellow-400'];
-                    return (
-                      <div
-                        key={model.id}
-                        onClick={() => setSelectedModel(model)}
-                        className={`bg-gray-900 rounded-xl shadow-lg p-6 border-2 ${borderColors[idx]} hover:bg-gray-800 transition cursor-pointer transform hover:scale-105`}
-                      >
-                        <div className="text-5xl mb-3">{model.icon}</div>
-                        <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">{model.description}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+                return (
+                  <div
+                    key={model.id}
+                    onClick={() => setSelectedModel(model)}
+                    className={`bg-gray-900 rounded-xl shadow-lg p-6 border-2 ${borderColor} hover:bg-gray-800 transition cursor-pointer transform hover:scale-105`}
+                  >
+                    <div className="text-5xl mb-3">{model.icon}</div>
+                    <h3 className="text-xl font-bold text-white mb-2">{model.name}</h3>
+                    <p className="text-gray-300 text-sm leading-relaxed">{model.description}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

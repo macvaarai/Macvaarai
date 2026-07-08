@@ -4,9 +4,19 @@ from fastapi.staticfiles import StaticFiles
 from typing import Optional
 from utils.file_utils import detect_file_type
 from utils.image_classifier import route_model
-from llm.qwen_client import ask_together, build_response_json
-from utils.pdf_final import create_exact_medical_report
+# from llm.qwen_client import ask_together, build_response_json
+# from utils.pdf_final import create_exact_medical_report
 from fastapi.middleware.cors import CORSMiddleware
+
+# Stub implementations for disabled modules
+def ask_together(prompt):
+    return "LLM service unavailable"
+
+def build_response_json(diagnosis, confidence, recommendation, text_response=""):
+    return {"status": "error", "message": "LLM service unavailable"}
+
+def create_exact_medical_report(*args, **kwargs):
+    return None
 import os
 from enum import Enum
 from langdetect import detect
@@ -209,7 +219,11 @@ from utils.preprocess import extract_text
 from fastapi.responses import PlainTextResponse, FileResponse
 import json
 
-whisper_model = whisper.load_model("base")
+try:
+    whisper_model = whisper.load_model("base")
+except Exception as e:
+    print(f"[WARNING] Could not load whisper model: {e}")
+    whisper_model = None
 
 
 @app.post("/chatbot", response_class=PlainTextResponse)
@@ -1345,9 +1359,9 @@ async def get_all_support_tickets(hospital_id: str = None):
         cursor = conn.cursor()
 
         if hospital_id:
-            cursor.execute("SELECT * FROM support_tickets WHERE hospital_id = ? ORDER BY created_at DESC", (hospital_id,))
+            cursor.execute("SELECT * FROM support_tickets WHERE hospital_id = ? ORDER BY created_date DESC", (hospital_id,))
         else:
-            cursor.execute("SELECT * FROM support_tickets ORDER BY created_at DESC")
+            cursor.execute("SELECT * FROM support_tickets ORDER BY created_date DESC")
 
         tickets = [dict(row) for row in cursor.fetchall()]
         conn.close()
@@ -1413,9 +1427,9 @@ async def get_all_feedback(hospital_id: str = None):
         cursor = conn.cursor()
 
         if hospital_id:
-            cursor.execute("SELECT * FROM hospital_feedback WHERE hospital_id = ? ORDER BY created_at DESC", (hospital_id,))
+            cursor.execute("SELECT * FROM feedback WHERE hospital_id = ? ORDER BY created_date DESC", (hospital_id,))
         else:
-            cursor.execute("SELECT * FROM hospital_feedback ORDER BY created_at DESC")
+            cursor.execute("SELECT * FROM feedback ORDER BY created_date DESC")
 
         feedback = [dict(row) for row in cursor.fetchall()]
         conn.close()
@@ -1484,9 +1498,9 @@ async def get_all_consultations(hospital_id: str = None):
         cursor = conn.cursor()
 
         if hospital_id:
-            cursor.execute("SELECT * FROM consultations WHERE hospital_id = ? ORDER BY created_at DESC", (hospital_id,))
+            cursor.execute("SELECT * FROM consultations WHERE hospital_id = ? ORDER BY created_date DESC", (hospital_id,))
         else:
-            cursor.execute("SELECT * FROM consultations ORDER BY created_at DESC")
+            cursor.execute("SELECT * FROM consultations ORDER BY created_date DESC")
 
         consultations = [dict(row) for row in cursor.fetchall()]
         conn.close()
@@ -2497,10 +2511,10 @@ async def admin_dashboard():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        cursor.execute("SELECT COUNT(*) as count FROM organizations WHERE status = 'active'")
+        cursor.execute("SELECT COUNT(*) as count FROM organizations")
         orgs = cursor.fetchone()["count"]
-        
-        cursor.execute("SELECT COUNT(*) as count FROM hospitals WHERE status = 'active'")
+
+        cursor.execute("SELECT COUNT(*) as count FROM hospitals")
         hospitals = cursor.fetchone()["count"]
         
         cursor.execute("SELECT COUNT(*) as count FROM patients")

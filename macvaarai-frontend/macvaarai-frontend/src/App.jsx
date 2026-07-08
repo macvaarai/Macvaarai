@@ -11,7 +11,6 @@ import ProfilePage from "./Components/ProfilePage.jsx";
 import AdminLogin from "./Components/AdminLogin.jsx";
 import AdminDashboard from "./Components/AdminDashboard.jsx";
 import AdminSignOut from "./Components/AdminSignOut.jsx";
-import AdminDashboardWrapper from "./Components/AdminDashboardWrapper.jsx";
 import HospitalAdminPortal from "./Components/HospitalAdminPortal.jsx";
 import HospitalTokenLogin from "./Components/HospitalTokenLogin.jsx";
 import OrganizationLogin from "./Components/OrganizationLogin.jsx";
@@ -268,7 +267,7 @@ const App = () => {
           path="/superadmin/*"
           element={
             <SuperAdminWrapper>
-              <AdminDashboardWrapper />
+              <Navigate to="/" replace />
             </SuperAdminWrapper>
           }
         />
@@ -318,8 +317,40 @@ const App = () => {
           }
         />
 
-        {/* 🔹 Vijay Care AI - Username/Password Login */}
-        <Route path="/vijay-care/login" element={<OrganizationLogin onLoginSuccess={(data) => {}} />} />
+        {/* 🔹 Vijay Care AI - Token Login (Simple) */}
+        <Route
+          path="/vijay-care/login"
+          element={
+            <div className="min-h-screen bg-gradient-to-br from-yellow-900 via-yellow-800 to-yellow-900 flex items-center justify-center p-6">
+              <div className="bg-yellow-50 rounded-lg shadow-2xl p-8 max-w-md w-full border-4 border-yellow-500">
+                <div className="text-center mb-6">
+                  <img src="/logos/Vijay.jpeg" alt="Vijay Care" className="h-20 w-20 rounded-full mx-auto mb-4 border-4 border-yellow-500" />
+                  <h2 className="text-3xl font-bold text-yellow-900 mb-2">Vijay Care AI</h2>
+                  <p className="text-gray-700">Organization Portal</p>
+                </div>
+                <input
+                  type="text"
+                  id="vijayLogin"
+                  placeholder="Enter email"
+                  defaultValue="vijay@1001"
+                  className="w-full border-2 border-yellow-400 rounded-lg px-4 py-3 mb-3 bg-white text-gray-900"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const email = document.getElementById('vijayLogin').value;
+                      localStorage.setItem('vijayToken', email);
+                      localStorage.setItem('vijayOrgName', 'Vijay Care AI');
+                      localStorage.setItem('orgToken', email);
+                      localStorage.setItem('orgName', 'Vijay Care AI');
+                      window.location.href = '/vijay-care/dashboard';
+                    }
+                  }}
+                  autoFocus
+                />
+                <p className="text-center text-gray-700 text-sm mt-2">Press Enter to login</p>
+              </div>
+            </div>
+          }
+        />
 
         <Route
           path="/vijay-care/dashboard"
@@ -582,7 +613,7 @@ const App = () => {
           }
         />
 
-        {/* 🔹 ADMIN LOGIN - Username/Password */}
+        {/* 🔹 ADMIN LOGIN - Fresh New Login */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
         <Route
