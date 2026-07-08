@@ -318,59 +318,8 @@ const App = () => {
           }
         />
 
-        {/* 🔹 Vijay Care AI AIORGANIZATION DASHBOARD - Token-based access */}
-        <Route
-          path="/vijay-care/login"
-          element={
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-6">
-              <div className="bg-gray-800 rounded-lg shadow-2xl p-8 max-w-md w-full border-2 border-yellow-500">
-                <div className="text-center mb-6">
-                  <img src="/logos/Vijay.jpeg" alt="Vijay Care AI AILogo" className="h-20 w-20 rounded-full border-4 border-yellow-500 mx-auto object-cover mb-4" />
-                  <h2 className="text-3xl font-bold text-yellow-400 mb-2">Vijay Care AI</h2>
-                  <p className="text-gray-400">AI-Driven Early Disease Detection & Identification</p>
-                </div>
-                <input
-                  type="password"
-                  placeholder="Enter access token"
-                  id="vijayToken"
-                  className="w-full border-2 border-gray-600 rounded-lg px-4 py-3 mb-4 bg-gray-700 text-white placeholder-gray-500"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      const token = document.getElementById('vijayToken').value;
-                      if (token === 'ORG_VJ24K9X5') {
-                        localStorage.setItem('vijayToken', token);
-                        localStorage.setItem('vijayOrgName', 'Vijay Care AI');
-                        localStorage.setItem('orgToken', token);
-                        localStorage.setItem('orgName', 'Vijay Care AI');
-                        window.location.href = '/vijay-care/dashboard';
-                      } else {
-                        alert('Invalid token');
-                      }
-                    }
-                  }}
-                />
-                <button
-                  onClick={() => {
-                    const token = document.getElementById('vijayToken').value;
-                    if (token === 'ORG_VIJAY_CARE_6E1455EE') {
-                      localStorage.setItem('vijayToken', token);
-                      localStorage.setItem('vijayOrgName', 'Vijay Care AI');
-                      localStorage.setItem('orgToken', token);
-                      localStorage.setItem('orgName', 'Vijay Care AI');
-                      window.location.href = '/vijay-care/dashboard';
-                    } else {
-                      alert('Invalid token');
-                    }
-                  }}
-                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 rounded-lg transition"
-                >
-                  Login
-                </button>
-                <p className="text-gray-500 text-xs text-center mt-4">Powered by MacvaarAI</p>
-              </div>
-            </div>
-          }
-        />
+        {/* 🔹 Vijay Care AI - Username/Password Login */}
+        <Route path="/vijay-care/login" element={<OrganizationLogin onLoginSuccess={(data) => {}} />} />
 
         <Route
           path="/vijay-care/dashboard"
@@ -633,43 +582,8 @@ const App = () => {
           }
         />
 
-        {/* 🔹 ADMIN LOGIN - Token-based (simplified) */}
-        <Route
-          path="/admin/login"
-          element={
-            <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 flex items-center justify-center p-6">
-              <div className="bg-blue-900 rounded-lg shadow-2xl p-8 max-w-md w-full border-2 border-blue-500">
-                <div className="text-center mb-6">
-                  <img src="/logos/Macvaar.jpg" alt="MacvaarAI Logo" className="h-20 w-20 rounded-full border-4 border-blue-500 mx-auto object-cover mb-4" />
-                  <h2 className="text-3xl font-bold text-blue-400 mb-2">MacvaarAI Admin</h2>
-                  <p className="text-gray-300">System Administration Portal</p>
-                </div>
-                <input
-                  type="password"
-                  placeholder="Enter admin token"
-                  id="adminToken"
-                  className="w-full border-2 border-gray-600 rounded-lg px-4 py-3 mb-4 bg-blue-800 text-white placeholder-gray-400"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      const token = document.getElementById('adminToken').value;
-                      if (token === 'ADMIN_KEY_2024') {
-                        localStorage.setItem('adminToken', token);
-                        localStorage.setItem('adminName', 'System Admin');
-                        localStorage.setItem('adminRole', 'hero_admin');
-                        localStorage.setItem('adminEmail', 'admin@macvaar.com');
-                        window.location.href = '/';
-                      } else {
-                        alert('Invalid admin token');
-                      }
-                    }
-                  }}
-                  autoFocus
-                />
-                <p className="text-center text-gray-400 text-sm mt-4">Enter admin access token and press Enter</p>
-              </div>
-            </div>
-          }
-        />
+        {/* 🔹 ADMIN LOGIN - Username/Password */}
+        <Route path="/admin/login" element={<AdminLogin />} />
 
         <Route
           path="/admin/dashboard"
