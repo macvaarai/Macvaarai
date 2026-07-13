@@ -15,11 +15,13 @@ import HospitalAdminPortal from "./Components/HospitalAdminPortal.jsx";
 import HospitalTokenLogin from "./Components/HospitalTokenLogin.jsx";
 import OrganizationLogin from "./Components/OrganizationLogin.jsx";
 import OrganizationDashboard from "./Components/OrganizationDashboard.jsx";
-import OrganizationAdminDashboardNew from "./Components/OrganizationAdminDashboardNew.jsx";
 import DynamicOrgLogin from "./Components/DynamicOrgLogin.jsx";
 import OrganizationPortalDashboard from "./Components/OrganizationPortalDashboard.jsx";
 import OrganizationTokenVerification from "./Components/OrganizationTokenVerification.jsx";
 import VijayCareDashboardComplete from "./Components/VijayCareDashboardComplete.jsx";
+import VijayLoginPage from "./Components/VijayLoginPage.jsx";
+import UnifiedCareLogin from "./Components/UnifiedCareLogin.jsx";
+import CarePortalDashboard from "./Components/CarePortalDashboard.jsx";
 
 const HospitalAdminWrapper = ({ children }) => {
   const role = localStorage.getItem("adminRole");
@@ -83,7 +85,7 @@ const VijayCareDashboardWrapper = ({ children }) => {
   const vijayToken = localStorage.getItem("vijayToken");
   const vijayOrgName = localStorage.getItem("vijayOrgName");
 
-  if (!vijayToken || vijayOrgName !== "Vijay Care AI") {
+  if (!vijayToken || !vijayOrgName) {
     return <Navigate to="/vijay-care/login" state={{ from: location }} replace />;
   }
 
@@ -219,7 +221,7 @@ const App = () => {
                     <AdminSignOut />
                   </div>
                   <Routes>
-                    <Route path="/" element={<ExploreMoreAI />} />
+                    <Route path="/" element={<Navigate to="/admin/login" replace />} />
                     <Route
                       path="chat/:chatId"
                       element={
@@ -261,41 +263,28 @@ const App = () => {
         />
 
         {/* 🔹 SUPER ADMIN (HERO ADMIN) - Full system control */}
+        {/* ADMIN PORTAL - Consolidated single admin dashboard */}
         <Route path="/superadmin/login" element={<AdminLogin />} />
-
         <Route
-          path="/superadmin/*"
+          path="/superadmin/dashboard"
           element={
-            <SuperAdminWrapper>
-              <Navigate to="/" replace />
-            </SuperAdminWrapper>
+            <NewAdminWrapper>
+              <AdminDashboard />
+            </NewAdminWrapper>
           }
         />
 
-        {/* 🔹 DYNAMIC ORGANIZATION TOKEN VERIFICATION - DISABLED (using direct org routes instead) */}
-        {/* <Route
-          path="/:orgSlug-org-admin"
-          element={<OrganizationTokenVerification />}
-        />
-
-        🔹 DYNAMIC ORGANIZATION LOGIN - DISABLED
-        <Route
-          path="/:orgSlug-org-admin/login"
-          element={<DynamicOrgLogin />}
-        /> */}
-
-        {/* 🔹 ORGANIZATION ADMIN - Organization-level management */}
         <Route
           path="/org-admin/login"
-          element={<OrganizationLogin onLoginSuccess={(data) => {}} />}
+          element={<AdminLogin />}
         />
 
         <Route
           path="/org-admin/dashboard"
           element={
-            <OrgAdminWrapper>
-              <OrganizationAdminDashboardNew />
-            </OrgAdminWrapper>
+            <NewAdminWrapper>
+              <AdminDashboard />
+            </NewAdminWrapper>
           }
         />
 
@@ -303,7 +292,7 @@ const App = () => {
           path="/org/dashboard"
           element={
             <OrgAdminWrapper>
-              <OrganizationAdminDashboardNew />
+              <AdminDashboard />
             </OrgAdminWrapper>
           }
         />
@@ -318,39 +307,7 @@ const App = () => {
         />
 
         {/* 🔹 Vijay Care AI - Token Login (Simple) */}
-        <Route
-          path="/vijay-care/login"
-          element={
-            <div className="min-h-screen bg-gradient-to-br from-yellow-900 via-yellow-800 to-yellow-900 flex items-center justify-center p-6">
-              <div className="bg-yellow-50 rounded-lg shadow-2xl p-8 max-w-md w-full border-4 border-yellow-500">
-                <div className="text-center mb-6">
-                  <img src="/logos/Vijay.jpeg" alt="Vijay Care" className="h-20 w-20 rounded-full mx-auto mb-4 border-4 border-yellow-500" />
-                  <h2 className="text-3xl font-bold text-yellow-900 mb-2">Vijay Care AI</h2>
-                  <p className="text-gray-700">Organization Portal</p>
-                </div>
-                <input
-                  type="text"
-                  id="vijayLogin"
-                  placeholder="Enter email"
-                  defaultValue="vijay@1001"
-                  className="w-full border-2 border-yellow-400 rounded-lg px-4 py-3 mb-3 bg-white text-gray-900"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      const email = document.getElementById('vijayLogin').value;
-                      localStorage.setItem('vijayToken', email);
-                      localStorage.setItem('vijayOrgName', 'Vijay Care AI');
-                      localStorage.setItem('orgToken', email);
-                      localStorage.setItem('orgName', 'Vijay Care AI');
-                      window.location.href = '/vijay-care/dashboard';
-                    }
-                  }}
-                  autoFocus
-                />
-                <p className="text-center text-gray-700 text-sm mt-2">Press Enter to login</p>
-              </div>
-            </div>
-          }
-        />
+        <Route path="/vijay-care/login" element={<VijayLoginPage />} />
 
         <Route
           path="/vijay-care/dashboard"
@@ -624,6 +581,24 @@ const App = () => {
             </NewAdminWrapper>
           }
         />
+
+        {/* UNIFIED CARE PORTALS */}
+        <Route path="/care/login" element={<UnifiedCareLogin />} />
+        <Route path="/care/dashboard" element={<CarePortalDashboard />} />
+
+        {/* Legacy routes - redirect to unified care portal */}
+        <Route path="/hospital/login" element={<Navigate to="/care/login" replace />} />
+        <Route path="/hospital/portal" element={<Navigate to="/care/dashboard" replace />} />
+        <Route path="/school/login" element={<Navigate to="/care/login" replace />} />
+        <Route path="/school/portal" element={<Navigate to="/care/dashboard" replace />} />
+        <Route path="/district/login" element={<Navigate to="/care/login" replace />} />
+        <Route path="/district/portal" element={<Navigate to="/care/dashboard" replace />} />
+        <Route path="/police/login" element={<Navigate to="/care/login" replace />} />
+        <Route path="/police/portal" element={<Navigate to="/care/dashboard" replace />} />
+        <Route path="/women/login" element={<Navigate to="/care/login" replace />} />
+        <Route path="/women/portal" element={<Navigate to="/care/dashboard" replace />} />
+        <Route path="/office/login" element={<Navigate to="/care/login" replace />} />
+        <Route path="/office/portal" element={<Navigate to="/care/dashboard" replace />} />
       </Routes>
   );
 };
