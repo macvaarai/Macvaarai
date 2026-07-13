@@ -13,18 +13,51 @@ const VijayCareDashboardComplete = () => {
   const [copiedToken, setCopiedToken] = useState(null);
   const [showHospitalForm, setShowHospitalForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [editingSchoolId, setEditingSchoolId] = useState(null);
+  const [editingDistrictId, setEditingDistrictId] = useState(null);
+  const [editingPoliceId, setEditingPoliceId] = useState(null);
+  const [editingWomenId, setEditingWomenId] = useState(null);
+  const [editingOfficeId, setEditingOfficeId] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
+
+  // Sort models: Heart & ENT on top, others below
+  const sortModelsByPriority = (models) => {
+    const heartEntModels = models.filter(m => m.name.includes('Heart') || m.name.includes('Ear') || m.name.includes('Nose') || m.name.includes('Throat'));
+    const otherModels = models.filter(m => !m.name.includes('Heart') && !m.name.includes('Ear') && !m.name.includes('Nose') && !m.name.includes('Throat'));
+    return [...heartEntModels, ...otherModels];
+  };
 
   const [hospitalForm, setHospitalForm] = useState({
     name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '',
-    admin_name: '', admin_email: '', num_doctors: 0, num_beds: 0, allocated_models: []
+    admin_name: '', admin_email: '', num_doctors: 0, num_beds: 0, allocated_models: [],
+    username: '', password: ''
   });
 
-  const [schools, setSchools] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [policeOrgs, setPoliceOrgs] = useState([]);
-  const [womenOrgs, setWomenOrgs] = useState([]);
-  const [offices, setOffices] = useState([]);
+  const [schools, setSchools] = useState([
+    { id: 1, name: 'Greenwood School', email: 'admin@greenwood.com', city: 'Chennai', contact_name: 'Mr. Kumar', members: 500 }
+  ]);
+  const [districts, setDistricts] = useState([
+    { id: 1, name: 'Chennai District', email: 'admin@chennai-district.gov', city: 'Chennai', contact_name: 'Dr. Rajesh', members: 50000 }
+  ]);
+  const [policeOrgs, setPoliceOrgs] = useState([
+    { id: 1, name: 'Chennai Police', email: 'admin@chennaipol.gov', city: 'Chennai', contact_name: 'Commissioner', members: 5000 }
+  ]);
+  const [womenOrgs, setWomenOrgs] = useState([
+    { id: 1, name: 'Women Empowerment Centre', email: 'admin@womencentre.org', city: 'Chennai', contact_name: 'Ms. Priya', members: 1000 }
+  ]);
+  const [offices, setOffices] = useState([
+    { id: 1, name: 'Vijay Care HQ', email: 'hq@vijaycare.com', city: 'Chennai', contact_name: 'Manager', members: 200 }
+  ]);
+
+  const [profile, setProfile] = useState({
+    name: 'Vijay Care Admin',
+    email: 'admin@vijaycare.com',
+    phone: '+91-9000000002',
+    organization: 'Vijay Care',
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
 
   const [showSchoolForm, setShowSchoolForm] = useState(false);
   const [showDistrictForm, setShowDistrictForm] = useState(false);
@@ -34,7 +67,12 @@ const VijayCareDashboardComplete = () => {
 
   const [partnerForm, setPartnerForm] = useState({
     name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '',
-    contact_name: '', contact_email: '', members: 0, allocated_models: []
+    contact_name: '', contact_email: '', members: 0, allocated_models: [],
+    username: '', password: '',
+    vitaminDeficiency: false, ironDeficiency: false, magnesiumDeficiency: false,
+    calciumDeficiency: false, proteinMalnutrition: false, stunting: false, wasting: false,
+    anemia: false, rickets: false, malaria: false, dengue: false, diarrhea: false,
+    respiratoryInfection: false, typhoid: false, measles: false, polio: false
   });
 
   const apiUrl = 'http://localhost:8000';
@@ -53,7 +91,7 @@ const VijayCareDashboardComplete = () => {
       const orgRes = await fetch(`${apiUrl}/admin/organizations`);
       const orgData = await orgRes.json();
 
-      if (orgData.status === 'success') {
+      if (orgData.status === 'success' && orgData.organizations && Array.isArray(orgData.organizations)) {
         const vijayOrg = orgData.organizations.find(o => o.name === 'Vijay Care AI');
         if (vijayOrg) {
           let models = vijayOrg.subscribed_models || [];
@@ -166,6 +204,8 @@ const VijayCareDashboardComplete = () => {
   const handleLogout = () => {
     localStorage.removeItem('orgId');
     localStorage.removeItem('orgToken');
+    localStorage.removeItem('vijayToken');
+    localStorage.removeItem('vijayOrgName');
     navigate('/');
   };
 
@@ -184,15 +224,21 @@ const VijayCareDashboardComplete = () => {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <img src="/logos/Vijay.jpeg" alt="Logo" className="h-16 w-16 rounded-full border-4 border-yellow-500 object-cover" />
+              <img src="/logos/Vijay.jpeg" alt="Vijay Care Logo" className="h-16 w-16 rounded-full border-4 border-yellow-500 object-cover" />
               <div>
                 <h1 className="text-4xl font-bold text-yellow-400">VIJAY CARE AI</h1>
                 <p className="text-yellow-300">AI-Driven Early Disease Detection & Identification</p>
               </div>
             </div>
-            <button onClick={handleLogout} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold">
-              <LogOut size={20} /> Logout
-            </button>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <img src="/logos/Macvaar.jpg" alt="Macvaar AI" className="h-12 w-12 rounded-full border-2 border-yellow-500 object-cover" />
+                <div className="text-right">
+                  <p className="text-xs text-yellow-300">Powered by</p>
+                  <p className="text-sm font-bold text-yellow-400">MacvaarAI</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -228,27 +274,50 @@ const VijayCareDashboardComplete = () => {
         {/* DASHBOARD */}
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
-            <h2 className="text-4xl font-bold text-yellow-400">Dashboard</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-4xl font-bold text-yellow-400">Government Health Statistics</h2>
+              <button onClick={() => setActiveTab('dashboard')} className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg font-bold">All</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-blue-500">
                 <Building2 size={40} className="mb-2 text-blue-400" />
-                <p className="text-sm text-gray-300">Hospitals</p>
+                <p className="text-sm text-gray-300">Hospitals AI</p>
                 <p className="text-4xl font-bold text-blue-400 mt-2">{hospitals.length}</p>
+              </div>
+              <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-cyan-500">
+                <Users size={40} className="mb-2 text-cyan-400" />
+                <p className="text-sm text-gray-300">Schools AI</p>
+                <p className="text-4xl font-bold text-cyan-400 mt-2">{schools.length}</p>
+              </div>
+              <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-green-500">
+                <BarChart3 size={40} className="mb-2 text-green-400" />
+                <p className="text-sm text-gray-300">Districts AI</p>
+                <p className="text-4xl font-bold text-green-400 mt-2">{districts.length}</p>
+              </div>
+              <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-red-500">
+                <Users size={40} className="mb-2 text-red-400" />
+                <p className="text-sm text-gray-300">Police AI</p>
+                <p className="text-4xl font-bold text-red-400 mt-2">{policeOrgs.length}</p>
               </div>
               <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-yellow-500">
                 <Zap size={40} className="mb-2 text-yellow-400" />
-                <p className="text-sm text-gray-300">Models</p>
+                <p className="text-sm text-gray-300">AI Models</p>
                 <p className="text-4xl font-bold text-yellow-400 mt-2">{subscribedModels.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-green-500">
-                <Users size={40} className="mb-2 text-green-400" />
-                <p className="text-sm text-gray-300">Status</p>
-                <p className="text-4xl font-bold text-green-400 mt-2">Active</p>
+              <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-pink-500">
+                <Users size={40} className="mb-2 text-pink-400" />
+                <p className="text-sm text-gray-300">Women Orgs AI</p>
+                <p className="text-4xl font-bold text-pink-400 mt-2">{womenOrgs.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-purple-500">
-                <BarChart3 size={40} className="mb-2 text-purple-400" />
-                <p className="text-sm text-gray-300">Plan</p>
-                <p className="text-4xl font-bold text-purple-400 mt-2">Premium</p>
+              <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-indigo-500">
+                <Building2 size={40} className="mb-2 text-indigo-400" />
+                <p className="text-sm text-gray-300">Offices AI</p>
+                <p className="text-4xl font-bold text-indigo-400 mt-2">{offices.length}</p>
+              </div>
+              <div className="bg-gradient-to-br from-gray-800 to-gray-700 text-white rounded-lg p-6 shadow-lg border-l-4 border-orange-500">
+                <Users size={40} className="mb-2 text-orange-400" />
+                <p className="text-sm text-gray-300">Total Orgs</p>
+                <p className="text-4xl font-bold text-orange-400 mt-2">{schools.length + districts.length + policeOrgs.length + womenOrgs.length + offices.length + hospitals.length}</p>
               </div>
             </div>
           </div>
@@ -258,162 +327,157 @@ const VijayCareDashboardComplete = () => {
         {activeTab === 'hospitals' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-bold text-yellow-400">Hospitals</h2>
+              <h2 className="text-3xl font-bold text-yellow-400">🏥 Hospital AI</h2>
               <button onClick={() => setShowHospitalForm(!showHospitalForm)} className="flex items-center gap-2 bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 font-bold">
                 <Plus size={20} /> Add Hospital
               </button>
             </div>
 
             {showHospitalForm && (
-              <div className="bg-gray-800 rounded-lg border-2 border-yellow-500 p-8 shadow-lg">
-                <h3 className="text-2xl font-bold text-yellow-400 mb-6">{editingId ? 'Edit' : 'Add'} Hospital & Allocate Models</h3>
-                <form onSubmit={handleAddHospital} className="space-y-6">
-                  {/* Hospital Details */}
+              <div className="bg-gray-800 rounded-lg border-2 border-yellow-500 p-6 shadow-lg">
+                <div className="grid grid-cols-2 gap-8">
+              {/* LEFT SIDE: HOSPITAL DETAILS */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-6 border border-yellow-500/30 max-h-96 overflow-y-auto">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-yellow-600 p-2 rounded-lg">
+                    <span className="text-lg">📝</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-yellow-300">Hospital Details</h3>
+                </div>
+                <div className="space-y-2">
                   <div>
-                    <h4 className="text-lg font-bold text-yellow-300 mb-3">Hospital Details</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <input type="text" placeholder="Hospital Name *" value={hospitalForm.name} onChange={(e) => setHospitalForm({...hospitalForm, name: e.target.value})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" required />
-                      <input type="email" placeholder="Hospital Email" value={hospitalForm.email} onChange={(e) => setHospitalForm({...hospitalForm, email: e.target.value})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
-                      <input type="tel" placeholder="Hospital Phone" value={hospitalForm.phone} onChange={(e) => setHospitalForm({...hospitalForm, phone: e.target.value})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
-                      <input type="text" placeholder="Address" value={hospitalForm.address} onChange={(e) => setHospitalForm({...hospitalForm, address: e.target.value})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
-                      <input type="text" placeholder="City" value={hospitalForm.city} onChange={(e) => setHospitalForm({...hospitalForm, city: e.target.value})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
-                      <input type="text" placeholder="State" value={hospitalForm.state} onChange={(e) => setHospitalForm({...hospitalForm, state: e.target.value})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
-                      <input type="text" placeholder="ZIP Code" value={hospitalForm.zip_code} onChange={(e) => setHospitalForm({...hospitalForm, zip_code: e.target.value})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
-                      <input type="number" placeholder="Doctors Count" value={hospitalForm.num_doctors} onChange={(e) => setHospitalForm({...hospitalForm, num_doctors: parseInt(e.target.value) || 0})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
-                      <input type="number" placeholder="Hospital Beds" value={hospitalForm.num_beds} onChange={(e) => setHospitalForm({...hospitalForm, num_beds: parseInt(e.target.value) || 0})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
+                    <label className="block text-yellow-300 text-xs font-semibold mb-1">Hospital Name *</label>
+                    <input type="text" placeholder="Enter hospital name" value={hospitalForm.name} onChange={(e) => setHospitalForm({...hospitalForm, name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" required />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-yellow-300 text-xs font-semibold mb-1">Email *</label>
+                      <input type="email" placeholder="Email" value={hospitalForm.email} onChange={(e) => setHospitalForm({...hospitalForm, email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      <input type="text" placeholder="Admin Name" value={hospitalForm.admin_name} onChange={(e) => setHospitalForm({...hospitalForm, admin_name: e.target.value})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
-                      <input type="email" placeholder="Admin Email" value={hospitalForm.admin_email} onChange={(e) => setHospitalForm({...hospitalForm, admin_email: e.target.value})} className="border-2 border-gray-600 rounded-lg px-4 py-3 bg-gray-700 text-white placeholder-gray-400" />
+                    <div>
+                      <label className="block text-yellow-300 text-xs font-semibold mb-1">Phone *</label>
+                      <input type="tel" placeholder="Phone" value={hospitalForm.phone} onChange={(e) => setHospitalForm({...hospitalForm, phone: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
                     </div>
                   </div>
-
-                  {/* Model Allocation */}
                   <div>
-                    <h4 className="text-lg font-bold text-yellow-300 mb-3">📊 Allocate Your Models to This Hospital</h4>
-                    <p className="text-gray-400 text-sm mb-3">Select which of your {subscribedModels.length} models this hospital can access:</p>
-                    <div className="bg-gray-700 rounded-lg p-4 border border-yellow-500">
-                      <div className="grid grid-cols-2 gap-3">
-                        {allModels
-                          .filter(m => subscribedModels.includes(m.id))
-                          .map(model => (
-                            <label key={model.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-600 p-2 rounded transition">
-                              <input
-                                type="checkbox"
-                                checked={hospitalForm.allocated_models.includes(model.id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setHospitalForm({
-                                      ...hospitalForm,
-                                      allocated_models: [...hospitalForm.allocated_models, model.id]
-                                    });
-                                  } else {
-                                    setHospitalForm({
-                                      ...hospitalForm,
-                                      allocated_models: hospitalForm.allocated_models.filter(m => m !== model.id)
-                                    });
-                                  }
-                                }}
-                                className="w-4 h-4 cursor-pointer"
-                              />
-                              <span className="text-sm font-semibold text-white">{model.icon} {model.name}</span>
-                            </label>
-                          ))}
+                    <label className="block text-yellow-300 text-xs font-semibold mb-1">Address *</label>
+                    <input type="text" placeholder="Full address" value={hospitalForm.address} onChange={(e) => setHospitalForm({...hospitalForm, address: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-yellow-300 text-xs font-semibold mb-1">City</label>
+                      <input type="text" placeholder="City" value={hospitalForm.city} onChange={(e) => setHospitalForm({...hospitalForm, city: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-yellow-300 text-xs font-semibold mb-1">State</label>
+                      <input type="text" placeholder="State" value={hospitalForm.state} onChange={(e) => setHospitalForm({...hospitalForm, state: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-yellow-300 text-xs font-semibold mb-1">ZIP Code</label>
+                      <input type="text" placeholder="ZIP" value={hospitalForm.zip_code} onChange={(e) => setHospitalForm({...hospitalForm, zip_code: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-yellow-300 text-xs font-semibold mb-1">Doctors</label>
+                      <input type="number" placeholder="0" value={hospitalForm.num_doctors} onChange={(e) => setHospitalForm({...hospitalForm, num_doctors: parseInt(e.target.value) || 0})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-yellow-300 text-xs font-semibold mb-1">Beds</label>
+                      <input type="number" placeholder="0" value={hospitalForm.num_beds} onChange={(e) => setHospitalForm({...hospitalForm, num_beds: parseInt(e.target.value) || 0})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-yellow-300 text-xs font-semibold mb-1">Admin Name</label>
+                    <input type="text" placeholder="Admin name" value={hospitalForm.admin_name} onChange={(e) => setHospitalForm({...hospitalForm, admin_name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label className="block text-yellow-300 text-sm font-semibold mb-2">Admin Email</label>
+                    <input type="email" placeholder="Admin email" value={hospitalForm.admin_email} onChange={(e) => setHospitalForm({...hospitalForm, admin_email: e.target.value})} className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:border-yellow-500 focus:outline-none transition" />
+                  </div>
+                  <div className="border-t border-gray-600 pt-3 mt-3">
+                    <p className="text-yellow-300 text-sm font-semibold mb-3">🔐 Dashboard Login</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-yellow-300 text-xs font-semibold mb-1">Username *</label>
+                        <input type="text" placeholder="Username" value={hospitalForm.username || ''} onChange={(e) => setHospitalForm({...hospitalForm, username: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
                       </div>
-                      <p className="text-yellow-300 text-sm mt-3 font-semibold">
-                        ✅ {hospitalForm.allocated_models.length} models selected for this hospital
-                      </p>
+                      <div>
+                        <label className="block text-yellow-300 text-xs font-semibold mb-1">Password *</label>
+                        <input type="password" placeholder="Password" value={hospitalForm.password || ''} onChange={(e) => setHospitalForm({...hospitalForm, password: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-yellow-500 focus:outline-none transition" />
+                      </div>
                     </div>
                   </div>
-
-                  <div className="flex gap-2">
-                    <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold">Save Hospital</button>
-                    <button type="button" onClick={() => {
-                      setShowHospitalForm(false);
-                      setEditingId(null);
-                      setHospitalForm({ name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', admin_name: '', admin_email: '', num_doctors: 0, num_beds: 0, allocated_models: [] });
-                    }} className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-bold">Cancel</button>
+                  <div className="pt-4 space-y-2">
+                    <p className="text-yellow-300 text-sm font-bold">Selected Models: {hospitalForm.allocated_models.length}</p>
+                    <button onClick={() => {if(editingId) {const updatedHospitals = hospitals.map(h => h.id === editingId ? {...hospitalForm, id: editingId} : h); setHospitals(updatedHospitals); setEditingId(null);} else {setHospitals([...hospitals, {...hospitalForm, id: Date.now()}]); } setShowHospitalForm(false); setHospitalForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', admin_name: '', admin_email: '', num_doctors: 0, num_beds: 0, allocated_models: []});}} className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded font-bold">{editingId ? 'Update' : 'Add'} Hospital</button>
                   </div>
-                </form>
+                </div>
               </div>
+
+              {/* RIGHT SIDE: AI MODELS GRID (2 COLUMNS) */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-yellow-300">📚 SELECT AI MODELS</h3>
+                <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto bg-gray-700 p-4 rounded border border-gray-600">
+                  {sortModelsByPriority(allModels).map(model => (
+                    <label key={model.id} className="flex items-start gap-3 p-3 bg-gray-800 rounded border border-gray-500 hover:border-yellow-500 cursor-pointer transition">
+                      <input
+                        type="checkbox"
+                        checked={hospitalForm.allocated_models.includes(model.id)}
+                        onChange={(e) => setHospitalForm({...hospitalForm, allocated_models: e.target.checked ? [...hospitalForm.allocated_models, model.id] : hospitalForm.allocated_models.filter(m => m !== model.id)})}
+                        className="rounded mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-yellow-300">{model.icon} {model.name}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            </div>
             )}
 
-            <div className="bg-gray-800 rounded-lg shadow-lg border border-gray-700">
-              {hospitals.length === 0 ? (
-                <div className="p-8 text-center text-gray-400">
-                  No hospitals added yet. Click "Add Hospital" to create one.
+            {/* HOSPITALS LIST */}
+            {hospitals.length > 0 && (
+              <div className="space-y-6 mt-8">
+                <div className="bg-gradient-to-r from-yellow-600 to-yellow-700 rounded-xl p-4 shadow-lg">
+                  <h3 className="text-2xl font-bold text-white">📋 Added Hospitals ({hospitals.length})</h3>
                 </div>
-              ) : (
-                <div className="space-y-4 p-6">
-                  {hospitals.map((h) => (
-                    <div key={h.id} className="bg-gray-700 rounded-lg p-6 border-l-4 border-yellow-500">
-                      <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {hospitals.map(item => (
+                    <div key={item.id} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 border border-yellow-500/30 hover:border-yellow-500 hover:shadow-2xl transition">
+                      <div className="flex justify-between items-start mb-4">
                         <div>
-                          <p className="text-yellow-300 text-sm font-semibold">Hospital Name</p>
-                          <p className="text-white font-bold text-lg">{h.name}</p>
+                          <h3 className="text-2xl font-bold text-yellow-300">🏥 {item.name}</h3>
+                          <p className="text-yellow-400 text-sm font-semibold">{item.admin_name}</p>
                         </div>
-                        <div>
-                          <p className="text-yellow-300 text-sm font-semibold">Email</p>
-                          <p className="text-gray-300">{h.email}</p>
-                        </div>
-                        <div>
-                          <p className="text-yellow-300 text-sm font-semibold">Location</p>
-                          <p className="text-gray-300">{h.city}, {h.state}</p>
-                        </div>
-                        <div>
-                          <p className="text-yellow-300 text-sm font-semibold">Access Token</p>
-                          <button onClick={() => simpleCopy(h.access_token, h.id)} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-semibold">
-                            {copiedToken === h.id ? '✓ Copied' : 'Copy Token'}
+                        <div className="flex gap-2">
+                          <button onClick={() => {setEditingId(item.id); setHospitalForm({...item}); setShowHospitalForm(true);}} className="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-400 p-2 rounded-lg transition">
+                            <Edit2 size={18} />
+                          </button>
+                          <button onClick={() => setHospitals(hospitals.filter(h => h.id !== item.id))} className="bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-400 p-2 rounded-lg transition">
+                            <Trash2 size={18} />
                           </button>
                         </div>
                       </div>
-
-                      {/* Allocated Models */}
-                      <div className="mb-4">
-                        <p className="text-yellow-300 text-sm font-semibold mb-2">📊 Allocated Models ({(h.subscribed_models || []).length})</p>
-                        <div className="flex flex-wrap gap-2">
-                          {(h.subscribed_models || []).length > 0 ? (
-                            (h.subscribed_models || []).map(modelId => {
-                              const model = allModels.find(m => m.id === modelId);
-                              return model ? (
-                                <span key={modelId} className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                                  {model.icon} {model.name}
-                                </span>
-                              ) : null;
-                            })
-                          ) : (
-                            <span className="text-gray-400 text-sm">No models allocated</span>
-                          )}
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-gray-300"><span>📧</span>{item.email}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📱</span>{item.phone}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📍</span>{item.address}, {item.city}</div>
+                        <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-3 mt-3">
+                          <div className="flex gap-4">
+                            <p className="text-yellow-400 font-bold">⚕️ {item.num_doctors} Doctors</p>
+                            <p className="text-yellow-400 font-bold">🛏️ {item.num_beds} Beds</p>
+                          </div>
                         </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            setEditingId(h.id);
-                            setHospitalForm({
-                              ...h,
-                              allocated_models: h.subscribed_models || []
-                            });
-                            setShowHospitalForm(true);
-                          }}
-                          className="text-green-400 hover:text-green-300 font-bold flex items-center gap-1"
-                        >
-                          <Edit2 size={18} /> Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteHospital(h.id || h.hospital_id)}
-                          className="text-red-400 hover:text-red-300 font-bold flex items-center gap-1"
-                        >
-                          <Trash2 size={18} /> Delete
-                        </button>
+                        <div className="text-yellow-400 font-bold pt-2">📚 {(item.allocated_models || []).length} models allocated</div>
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -428,75 +492,196 @@ const VijayCareDashboardComplete = () => {
             {showSchoolForm && (
               <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-blue-500">
                 <div className="grid grid-cols-2 gap-8">
-                  {/* LEFT SIDE: SCHOOL DETAILS FORM */}
-                  <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-blue-300">📝 SCHOOL DETAILS</h3>
-                    <div className="space-y-3">
-                      <input type="text" placeholder="School Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
-                      <input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
-                      <input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
-                      <input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
-                      <input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
-                      <input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
-                      <input type="text" placeholder="Principal/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
-                      <input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
-                      <input type="number" placeholder="Number of Students" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="w-full p-3 rounded bg-gray-700 border border-gray-600 text-white" />
-                      <div className="pt-3">
-                        <p className="text-blue-300 text-sm font-bold mb-2">Selected Models: {partnerForm.allocated_models.length}</p>
-                        <button onClick={() => {setSchools([...schools, {...partnerForm, id: Date.now()}]); setShowSchoolForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-bold">Add School</button>
+              {/* LEFT SIDE: SCHOOL DETAILS */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-6 border border-blue-500/30 max-h-96 overflow-y-auto">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-blue-600 p-2 rounded-lg">
+                    <span className="text-lg">📝</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-blue-300">School Details</h3>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-blue-300 text-xs font-semibold mb-1">School Name *</label>
+                    <input type="text" placeholder="Enter school name" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-blue-300 text-xs font-semibold mb-1">Email *</label>
+                      <input type="email" placeholder="Email" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-blue-300 text-xs font-semibold mb-1">Phone *</label>
+                      <input type="tel" placeholder="Phone" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-blue-300 text-xs font-semibold mb-1">Address *</label>
+                    <input type="text" placeholder="Full address" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-blue-300 text-xs font-semibold mb-1">City</label>
+                      <input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-blue-300 text-xs font-semibold mb-1">State</label>
+                      <input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-blue-300 text-xs font-semibold mb-1">Students</label>
+                      <input type="number" placeholder="0" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-blue-300 text-xs font-semibold mb-1">Principal/Contact Name</label>
+                    <input type="text" placeholder="Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label className="block text-blue-300 text-sm font-semibold mb-2">Contact Email</label>
+                    <input type="email" placeholder="Contact email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:border-blue-500 focus:outline-none transition" />
+                  </div>
+                  <div className="border-t border-gray-600 pt-3 mt-3">
+                    <p className="text-blue-300 text-sm font-semibold mb-3">🔐 Dashboard Login</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-blue-300 text-xs font-semibold mb-1">Username *</label>
+                        <input type="text" placeholder="Username" value={partnerForm.username} onChange={(e) => setPartnerForm({...partnerForm, username: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                      </div>
+                      <div>
+                        <label className="block text-blue-300 text-xs font-semibold mb-1">Password *</label>
+                        <input type="password" placeholder="Password" value={partnerForm.password} onChange={(e) => setPartnerForm({...partnerForm, password: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
                       </div>
                     </div>
                   </div>
+                  <div className="pt-4">
+                    <button onClick={() => {if(editingSchoolId) {const updatedSchools = schools.map(s => s.id === editingSchoolId ? {...partnerForm, id: editingSchoolId} : s); setSchools(updatedSchools); setEditingSchoolId(null);} else {setSchools([...schools, {...partnerForm, id: Date.now()}]); } setShowSchoolForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: [], username: '', password: '', vitaminDeficiency: false, ironDeficiency: false, magnesiumDeficiency: false, calciumDeficiency: false, proteinMalnutrition: false, stunting: false, wasting: false, anemia: false, rickets: false, diarrhea: false, respiratoryInfection: false, typhoid: false, measles: false, polio: false});}} className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-bold">{editingSchoolId ? 'Update' : 'Add'} School</button>
+                  </div>
+                </div>
+              </div>
 
-                  {/* RIGHT SIDE: AI MODELS GRID (4 COLUMNS) */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-blue-300">📚 SELECT AI MODELS</h3>
-                    <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto bg-gray-700 p-4 rounded border border-gray-600">
-                      {allModels.map(model => (
-                        <label key={model.id} className="flex items-start gap-3 p-3 bg-gray-800 rounded border border-gray-500 hover:border-blue-500 cursor-pointer transition">
-                          <input
-                            type="checkbox"
-                            checked={partnerForm.allocated_models.includes(model.id)}
-                            onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})}
-                            className="rounded mt-1"
-                          />
-                          <div className="flex-1">
-                            <p className="text-sm font-bold text-blue-300">{model.icon} {model.name}</p>
-                          </div>
-                        </label>
-                      ))}
+              {/* RIGHT SIDE: AI MODELS & HEALTH CONDITIONS */}
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                <div>
+                  <h3 className="text-lg font-bold text-blue-300 mb-2">📚 SELECT AI MODELS</h3>
+                  <div className="grid grid-cols-2 gap-2 bg-gray-700 p-3 rounded border border-gray-600 mb-3">
+                    {sortModelsByPriority(allModels).map(model => (
+                      <label key={model.id} className="flex items-start gap-2 p-2 bg-gray-800 rounded border border-gray-500 hover:border-blue-500 cursor-pointer transition">
+                        <input
+                          type="checkbox"
+                          checked={partnerForm.allocated_models.includes(model.id)}
+                          onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})}
+                          className="rounded mt-0.5 w-3 h-3"
+                        />
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-blue-300">{model.icon} {model.name}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-bold text-blue-300 mb-2">Other AI</h3>
+                  <div className="space-y-2 bg-gray-700 p-3 rounded border border-gray-600">
+                    <div>
+                      <p className="text-blue-200 text-xs font-semibold mb-1">Deficiencies:</p>
+                      <div className="grid grid-cols-2 gap-1">
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.vitaminDeficiency || false} onChange={(e) => setPartnerForm({...partnerForm, vitaminDeficiency: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Vitamin</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.ironDeficiency || false} onChange={(e) => setPartnerForm({...partnerForm, ironDeficiency: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Iron</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.magnesiumDeficiency || false} onChange={(e) => setPartnerForm({...partnerForm, magnesiumDeficiency: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Magnesium</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.calciumDeficiency || false} onChange={(e) => setPartnerForm({...partnerForm, calciumDeficiency: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Calcium</span></label>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-blue-200 text-xs font-semibold mb-1">Malnutrition:</p>
+                      <div className="grid grid-cols-2 gap-1">
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.proteinMalnutrition || false} onChange={(e) => setPartnerForm({...partnerForm, proteinMalnutrition: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Protein</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.stunting || false} onChange={(e) => setPartnerForm({...partnerForm, stunting: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Stunting</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.wasting || false} onChange={(e) => setPartnerForm({...partnerForm, wasting: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Wasting</span></label>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-blue-200 text-xs font-semibold mb-1">Blood & Bone:</p>
+                      <div className="grid grid-cols-2 gap-1">
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.anemia || false} onChange={(e) => setPartnerForm({...partnerForm, anemia: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Anemia</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.rickets || false} onChange={(e) => setPartnerForm({...partnerForm, rickets: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Rickets</span></label>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-blue-200 text-xs font-semibold mb-1">Infectious Diseases:</p>
+                      <div className="grid grid-cols-2 gap-1">
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.diarrhea || false} onChange={(e) => setPartnerForm({...partnerForm, diarrhea: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Diarrhea</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.respiratoryInfection || false} onChange={(e) => setPartnerForm({...partnerForm, respiratoryInfection: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Respiratory</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.typhoid || false} onChange={(e) => setPartnerForm({...partnerForm, typhoid: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Typhoid</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.measles || false} onChange={(e) => setPartnerForm({...partnerForm, measles: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Measles</span></label>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={partnerForm.polio || false} onChange={(e) => setPartnerForm({...partnerForm, polio: e.target.checked})} className="rounded w-3 h-3" /><span className="text-blue-100 text-xs">Polio</span></label>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+            </div>
             )}
 
             {/* SCHOOLS LIST */}
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-blue-300">📋 Added Schools</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {schools.map(item => (
-                  <div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-blue-500">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-2xl font-bold text-blue-300">🎓 {item.name}</h3>
-                        <p className="text-gray-400 text-sm">{item.contact_name}</p>
+            {schools.length > 0 && (
+              <div className="space-y-6 mt-8">
+                <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl p-4 shadow-lg">
+                  <h3 className="text-2xl font-bold text-white">📋 Added Schools ({schools.length})</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {schools.map(item => (
+                    <div key={item.id} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 border border-blue-500/30 hover:border-blue-500 hover:shadow-2xl transition">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-2xl font-bold text-blue-300">🎓 {item.name}</h3>
+                          <p className="text-cyan-300 text-sm font-semibold">{item.contact_name}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => {setEditingSchoolId(item.id); setPartnerForm({...item}); setShowSchoolForm(true);}} className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 p-2 rounded-lg transition">
+                            <Edit2 size={18} />
+                          </button>
+                          <button onClick={() => setSchools(schools.filter(s => s.id !== item.id))} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 p-2 rounded-lg transition">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </div>
-                      <button onClick={() => setSchools(schools.filter(s => s.id !== item.id))} className="text-red-500 hover:text-red-700">
-                        <Trash2 size={20} />
-                      </button>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-gray-300"><span>📧</span>{item.email}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📱</span>{item.phone}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📍</span>{item.address}, {item.city}</div>
+                        <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-3 mt-3">
+                          <p className="text-cyan-400 font-bold text-lg">👥 {item.members} Students</p>
+                        </div>
+                        {(item.vitaminDeficiency || item.ironDeficiency || item.magnesiumDeficiency || item.calciumDeficiency || item.proteinMalnutrition || item.stunting || item.wasting || item.anemia || item.rickets || item.diarrhea || item.respiratoryInfection || item.typhoid || item.measles || item.polio) && (
+                          <div className="bg-cyan-600/20 border border-cyan-500/30 rounded-lg p-3 mt-3">
+                            <p className="text-cyan-300 font-bold text-sm mb-2">🏥 Health Issues Addressed:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {item.vitaminDeficiency && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Vitamin</span>}
+                              {item.ironDeficiency && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Iron</span>}
+                              {item.magnesiumDeficiency && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Mag</span>}
+                              {item.calciumDeficiency && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Calcium</span>}
+                              {item.proteinMalnutrition && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Protein</span>}
+                              {item.stunting && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Stunting</span>}
+                              {item.wasting && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Wasting</span>}
+                              {item.anemia && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Anemia</span>}
+                              {item.rickets && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Rickets</span>}
+                              {item.diarrhea && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Diarrhea</span>}
+                              {item.respiratoryInfection && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Resp</span>}
+                              {item.typhoid && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Typhoid</span>}
+                              {item.measles && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Measles</span>}
+                              {item.polio && <span className="bg-cyan-600/40 text-cyan-200 px-2 py-1 rounded text-xs">Polio</span>}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-300 space-y-1">
-                      <p>📧 {item.email}</p>
-                      <p>📱 {item.phone}</p>
-                      <p>📍 {item.address}, {item.city}</p>
-                      <p>👥 {item.members} students</p>
-                      <p className="text-blue-400 font-bold">📚 {item.allocated_models.length} models allocated</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -509,14 +694,137 @@ const VijayCareDashboardComplete = () => {
             </div>
 
             {showDistrictForm && (
-              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-green-500 space-y-6">
-                <div><h3 className="text-lg font-bold text-green-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-green-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-green-300 mb-4">📝 ENTER DISTRICT DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="District Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Collector/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Population/Coverage" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setDistricts([...districts, {...partnerForm, id: Date.now()}]); setShowDistrictForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded font-bold">Add District</button>
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-green-500">
+                <div className="grid grid-cols-2 gap-8">
+              {/* LEFT SIDE: DISTRICT DETAILS */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-6 border border-green-500/30 max-h-96 overflow-y-auto">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-green-600 p-2 rounded-lg">
+                    <span className="text-lg">📝</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-green-300">District Details</h3>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-green-300 text-xs font-semibold mb-1">District Name *</label>
+                    <input type="text" placeholder="Enter district name" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-green-300 text-xs font-semibold mb-1">Email *</label>
+                      <input type="email" placeholder="Email" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-green-300 text-xs font-semibold mb-1">Phone *</label>
+                      <input type="tel" placeholder="Phone" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-green-300 text-xs font-semibold mb-1">Address *</label>
+                    <input type="text" placeholder="Full address" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-green-300 text-xs font-semibold mb-1">City</label>
+                      <input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-green-300 text-xs font-semibold mb-1">State</label>
+                      <input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-green-300 text-xs font-semibold mb-1">Population</label>
+                      <input type="number" placeholder="0" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-green-300 text-xs font-semibold mb-1">Collector/Contact Name</label>
+                    <input type="text" placeholder="Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label className="block text-green-300 text-sm font-semibold mb-2">Contact Email</label>
+                    <input type="email" placeholder="Contact email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:border-green-500 focus:outline-none transition" />
+                  </div>
+                  <div className="border-t border-gray-600 pt-3 mt-3">
+                    <p className="text-green-300 text-sm font-semibold mb-3">🔐 Dashboard Login</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-green-300 text-xs font-semibold mb-1">Username *</label>
+                        <input type="text" placeholder="Username" value={partnerForm.username || ''} onChange={(e) => setPartnerForm({...partnerForm, username: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                      </div>
+                      <div>
+                        <label className="block text-green-300 text-xs font-semibold mb-1">Password *</label>
+                        <input type="password" placeholder="Password" value={partnerForm.password || ''} onChange={(e) => setPartnerForm({...partnerForm, password: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-green-500 focus:outline-none transition" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4 space-y-2">
+                    <p className="text-green-300 text-sm font-bold">Selected Models: {partnerForm.allocated_models.length}</p>
+                    <button onClick={() => {if(editingDistrictId) {const updatedDistricts = districts.map(d => d.id === editingDistrictId ? {...partnerForm, id: editingDistrictId} : d); setDistricts(updatedDistricts); setEditingDistrictId(null);} else {setDistricts([...districts, {...partnerForm, id: Date.now()}]); } setShowDistrictForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: [], username: '', password: ''});}} className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded font-bold">{editingDistrictId ? 'Update' : 'Add'} District</button>
+                  </div>
+                </div>
               </div>
+
+              {/* RIGHT SIDE: AI MODELS GRID (2 COLUMNS) */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-green-300">📚 SELECT AI MODELS</h3>
+                <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto bg-gray-700 p-4 rounded border border-gray-600">
+                  {sortModelsByPriority(allModels).map(model => (
+                    <label key={model.id} className="flex items-start gap-3 p-3 bg-gray-800 rounded border border-gray-500 hover:border-green-500 cursor-pointer transition">
+                      <input
+                        type="checkbox"
+                        checked={partnerForm.allocated_models.includes(model.id)}
+                        onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})}
+                        className="rounded mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-green-300">{model.icon} {model.name}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {districts.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-green-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-green-300">📍 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setDistricts(districts.filter(d => d.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} population</p><p className="text-green-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
-            </div>
+            {/* DISTRICTS LIST */}
+            {districts.length > 0 && (
+              <div className="space-y-6 mt-8">
+                <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-4 shadow-lg">
+                  <h3 className="text-2xl font-bold text-white">📋 Added Districts ({districts.length})</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {districts.map(item => (
+                    <div key={item.id} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 border border-green-500/30 hover:border-green-500 hover:shadow-2xl transition">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-2xl font-bold text-green-300">📍 {item.name}</h3>
+                          <p className="text-green-400 text-sm font-semibold">{item.contact_name}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => {setEditingDistrictId(item.id); setPartnerForm({...item}); setShowDistrictForm(true);}} className="bg-green-600/20 hover:bg-green-600/40 text-green-400 p-2 rounded-lg transition">
+                            <Edit2 size={18} />
+                          </button>
+                          <button onClick={() => setDistricts(districts.filter(d => d.id !== item.id))} className="bg-green-600/20 hover:bg-green-600/40 text-green-400 p-2 rounded-lg transition">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-gray-300"><span>📧</span>{item.email}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📱</span>{item.phone}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📍</span>{item.address}, {item.city}</div>
+                        <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-3 mt-3">
+                          <p className="text-green-400 font-bold text-lg">👥 {item.members} Population</p>
+                        </div>
+                        <div className="text-green-400 font-bold pt-2">📚 {(item.allocated_models || []).length} models allocated</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -529,14 +837,137 @@ const VijayCareDashboardComplete = () => {
             </div>
 
             {showPoliceForm && (
-              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-red-500 space-y-6">
-                <div><h3 className="text-lg font-bold text-red-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-red-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-red-300 mb-4">📝 ENTER POLICE DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="Police Department *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Chief/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Officers" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setPoliceOrgs([...policeOrgs, {...partnerForm, id: Date.now()}]); setShowPoliceForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded font-bold">Add Police</button>
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-red-500">
+                <div className="grid grid-cols-2 gap-8">
+              {/* LEFT SIDE: POLICE DETAILS */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-6 border border-red-500/30 max-h-96 overflow-y-auto">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-red-600 p-2 rounded-lg">
+                    <span className="text-lg">📝</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-red-300">Police Details</h3>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-red-300 text-xs font-semibold mb-1">Police Department *</label>
+                    <input type="text" placeholder="Enter department name" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-red-300 text-xs font-semibold mb-1">Email *</label>
+                      <input type="email" placeholder="Email" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-red-300 text-xs font-semibold mb-1">Phone *</label>
+                      <input type="tel" placeholder="Phone" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-red-300 text-xs font-semibold mb-1">Address *</label>
+                    <input type="text" placeholder="Full address" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-red-300 text-xs font-semibold mb-1">City</label>
+                      <input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-red-300 text-xs font-semibold mb-1">State</label>
+                      <input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-red-300 text-xs font-semibold mb-1">Officers</label>
+                      <input type="number" placeholder="0" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-red-300 text-xs font-semibold mb-1">Chief/Contact Name</label>
+                    <input type="text" placeholder="Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label className="block text-red-300 text-sm font-semibold mb-2">Contact Email</label>
+                    <input type="email" placeholder="Contact email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:border-red-500 focus:outline-none transition" />
+                  </div>
+                  <div className="border-t border-gray-600 pt-3 mt-3">
+                    <p className="text-red-300 text-sm font-semibold mb-3">🔐 Dashboard Login</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-red-300 text-xs font-semibold mb-1">Username *</label>
+                        <input type="text" placeholder="Username" value={partnerForm.username || ''} onChange={(e) => setPartnerForm({...partnerForm, username: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                      </div>
+                      <div>
+                        <label className="block text-red-300 text-xs font-semibold mb-1">Password *</label>
+                        <input type="password" placeholder="Password" value={partnerForm.password || ''} onChange={(e) => setPartnerForm({...partnerForm, password: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-red-500 focus:outline-none transition" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4 space-y-2">
+                    <p className="text-red-300 text-sm font-bold">Selected Models: {partnerForm.allocated_models.length}</p>
+                    <button onClick={() => {if(editingPoliceId) {const updatedPolice = policeOrgs.map(p => p.id === editingPoliceId ? {...partnerForm, id: editingPoliceId} : p); setPoliceOrgs(updatedPolice); setEditingPoliceId(null);} else {setPoliceOrgs([...policeOrgs, {...partnerForm, id: Date.now()}]); } setShowPoliceForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: [], username: '', password: []});}} className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded font-bold">{editingPoliceId ? 'Update' : 'Add'} Police</button>
+                  </div>
+                </div>
               </div>
+
+              {/* RIGHT SIDE: AI MODELS GRID (2 COLUMNS) */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-red-300">📚 SELECT AI MODELS</h3>
+                <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto bg-gray-700 p-4 rounded border border-gray-600">
+                  {sortModelsByPriority(allModels).map(model => (
+                    <label key={model.id} className="flex items-start gap-3 p-3 bg-gray-800 rounded border border-gray-500 hover:border-red-500 cursor-pointer transition">
+                      <input
+                        type="checkbox"
+                        checked={partnerForm.allocated_models.includes(model.id)}
+                        onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})}
+                        className="rounded mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-red-300">{model.icon} {model.name}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {policeOrgs.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-red-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-red-300">👮 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setPoliceOrgs(policeOrgs.filter(p => p.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} officers</p><p className="text-red-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
-            </div>
+            {/* POLICE LIST */}
+            {policeOrgs.length > 0 && (
+              <div className="space-y-6 mt-8">
+                <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-xl p-4 shadow-lg">
+                  <h3 className="text-2xl font-bold text-white">📋 Added Police ({policeOrgs.length})</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {policeOrgs.map(item => (
+                    <div key={item.id} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 border border-red-500/30 hover:border-red-500 hover:shadow-2xl transition">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-2xl font-bold text-red-300">👮 {item.name}</h3>
+                          <p className="text-red-400 text-sm font-semibold">{item.contact_name}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => {setEditingPoliceId(item.id); setPartnerForm({...item}); setShowPoliceForm(true);}} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 p-2 rounded-lg transition">
+                            <Edit2 size={18} />
+                          </button>
+                          <button onClick={() => setPoliceOrgs(policeOrgs.filter(p => p.id !== item.id))} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 p-2 rounded-lg transition">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-gray-300"><span>📧</span>{item.email}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📱</span>{item.phone}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📍</span>{item.address}, {item.city}</div>
+                        <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-3 mt-3">
+                          <p className="text-red-400 font-bold text-lg">👥 {item.members} Officers</p>
+                        </div>
+                        <div className="text-red-400 font-bold pt-2">📚 {(item.allocated_models || []).length} models allocated</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -549,14 +980,137 @@ const VijayCareDashboardComplete = () => {
             </div>
 
             {showWomenForm && (
-              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-pink-500 space-y-6">
-                <div><h3 className="text-lg font-bold text-pink-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-pink-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-pink-300 mb-4">📝 ENTER WOMEN ORG DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="Organization Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Director/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Members" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setWomenOrgs([...womenOrgs, {...partnerForm, id: Date.now()}]); setShowWomenForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-3 rounded font-bold">Add Women Organization</button>
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-pink-500">
+                <div className="grid grid-cols-2 gap-8">
+              {/* LEFT SIDE: WOMEN DETAILS */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-6 border border-pink-500/30 max-h-96 overflow-y-auto">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-pink-600 p-2 rounded-lg">
+                    <span className="text-lg">📝</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-pink-300">Women Organization Details</h3>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-pink-300 text-xs font-semibold mb-1">Organization Name *</label>
+                    <input type="text" placeholder="Enter organization name" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-pink-300 text-xs font-semibold mb-1">Email *</label>
+                      <input type="email" placeholder="Email" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-pink-300 text-xs font-semibold mb-1">Phone *</label>
+                      <input type="tel" placeholder="Phone" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-pink-300 text-xs font-semibold mb-1">Address *</label>
+                    <input type="text" placeholder="Full address" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-pink-300 text-xs font-semibold mb-1">City</label>
+                      <input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-pink-300 text-xs font-semibold mb-1">State</label>
+                      <input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-pink-300 text-xs font-semibold mb-1">Members</label>
+                      <input type="number" placeholder="0" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-pink-300 text-xs font-semibold mb-1">Director/Contact Name</label>
+                    <input type="text" placeholder="Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label className="block text-pink-300 text-sm font-semibold mb-2">Contact Email</label>
+                    <input type="email" placeholder="Contact email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:border-pink-500 focus:outline-none transition" />
+                  </div>
+                  <div className="border-t border-gray-600 pt-3 mt-3">
+                    <p className="text-pink-300 text-sm font-semibold mb-3">🔐 Dashboard Login</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-pink-300 text-xs font-semibold mb-1">Username *</label>
+                        <input type="text" placeholder="Username" value={partnerForm.username || ''} onChange={(e) => setPartnerForm({...partnerForm, username: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                      </div>
+                      <div>
+                        <label className="block text-pink-300 text-xs font-semibold mb-1">Password *</label>
+                        <input type="password" placeholder="Password" value={partnerForm.password || ''} onChange={(e) => setPartnerForm({...partnerForm, password: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-pink-500 focus:outline-none transition" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4 space-y-2">
+                    <p className="text-pink-300 text-sm font-bold">Selected Models: {partnerForm.allocated_models.length}</p>
+                    <button onClick={() => {if(editingWomenId) {const updatedWomen = womenOrgs.map(w => w.id === editingWomenId ? {...partnerForm, id: editingWomenId} : w); setWomenOrgs(updatedWomen); setEditingWomenId(null);} else {setWomenOrgs([...womenOrgs, {...partnerForm, id: Date.now()}]); } setShowWomenForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: [], username: '', password: ''});}} className="w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-3 rounded font-bold">{editingWomenId ? 'Update' : 'Add'} Women Org</button>
+                  </div>
+                </div>
               </div>
+
+              {/* RIGHT SIDE: AI MODELS GRID (2 COLUMNS) */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-pink-300">📚 SELECT AI MODELS</h3>
+                <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto bg-gray-700 p-4 rounded border border-gray-600">
+                  {sortModelsByPriority(allModels).map(model => (
+                    <label key={model.id} className="flex items-start gap-3 p-3 bg-gray-800 rounded border border-gray-500 hover:border-pink-500 cursor-pointer transition">
+                      <input
+                        type="checkbox"
+                        checked={partnerForm.allocated_models.includes(model.id)}
+                        onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})}
+                        className="rounded mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-pink-300">{model.icon} {model.name}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {womenOrgs.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-pink-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-pink-300">👩 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setWomenOrgs(womenOrgs.filter(w => w.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} members</p><p className="text-pink-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
-            </div>
+            {/* WOMEN LIST */}
+            {womenOrgs.length > 0 && (
+              <div className="space-y-6 mt-8">
+                <div className="bg-gradient-to-r from-pink-600 to-pink-700 rounded-xl p-4 shadow-lg">
+                  <h3 className="text-2xl font-bold text-white">📋 Added Women Organizations ({womenOrgs.length})</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {womenOrgs.map(item => (
+                    <div key={item.id} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 border border-pink-500/30 hover:border-pink-500 hover:shadow-2xl transition">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-2xl font-bold text-pink-300">👩 {item.name}</h3>
+                          <p className="text-pink-400 text-sm font-semibold">{item.contact_name}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => {setEditingWomenId(item.id); setPartnerForm({...item}); setShowWomenForm(true);}} className="bg-pink-600/20 hover:bg-pink-600/40 text-pink-400 p-2 rounded-lg transition">
+                            <Edit2 size={18} />
+                          </button>
+                          <button onClick={() => setWomenOrgs(womenOrgs.filter(w => w.id !== item.id))} className="bg-pink-600/20 hover:bg-pink-600/40 text-pink-400 p-2 rounded-lg transition">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-gray-300"><span>📧</span>{item.email}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📱</span>{item.phone}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📍</span>{item.address}, {item.city}</div>
+                        <div className="bg-pink-600/20 border border-pink-500/30 rounded-lg p-3 mt-3">
+                          <p className="text-pink-400 font-bold text-lg">👥 {item.members} Members</p>
+                        </div>
+                        <div className="text-pink-400 font-bold pt-2">📚 {(item.allocated_models || []).length} models allocated</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -569,14 +1123,137 @@ const VijayCareDashboardComplete = () => {
             </div>
 
             {showOfficeForm && (
-              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-indigo-500 space-y-6">
-                <div><h3 className="text-lg font-bold text-indigo-300 mb-3">📚 SELECT AI MODELS</h3><div className="grid grid-cols-4 gap-2 bg-gray-700 p-3 rounded border border-gray-600 max-h-40 overflow-y-auto">{allModels.map(model => (<label key={model.id} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={partnerForm.allocated_models.includes(model.id)} onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})} className="rounded" />{model.name}</label>))}</div><p className="text-indigo-300 text-sm mt-2">Selected: {partnerForm.allocated_models.length} models</p></div><div className="border-t border-gray-600 pt-6"><h3 className="text-lg font-bold text-indigo-300 mb-4">📝 ENTER OFFICE DETAILS</h3><div className="grid grid-cols-2 gap-4"><input type="text" placeholder="Office Name *" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Email *" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="tel" placeholder="Phone *" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Address *" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="text" placeholder="Manager/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /><input type="number" placeholder="Employees" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="col-span-2 p-3 rounded bg-gray-700 border border-gray-600 text-white" /></div></div><button onClick={() => {setOffices([...offices, {...partnerForm, id: Date.now()}]); setShowOfficeForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: []});}} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded font-bold">Add Office</button>
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-indigo-500">
+                <div className="grid grid-cols-2 gap-8">
+              {/* LEFT SIDE: OFFICE DETAILS */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-6 border border-indigo-500/30 max-h-96 overflow-y-auto">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-indigo-600 p-2 rounded-lg">
+                    <span className="text-lg">📝</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-indigo-300">Office Details</h3>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-indigo-300 text-xs font-semibold mb-1">Office Name *</label>
+                    <input type="text" placeholder="Enter office name" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-indigo-300 text-xs font-semibold mb-1">Email *</label>
+                      <input type="email" placeholder="Email" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-indigo-300 text-xs font-semibold mb-1">Phone *</label>
+                      <input type="tel" placeholder="Phone" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-indigo-300 text-xs font-semibold mb-1">Address *</label>
+                    <input type="text" placeholder="Full address" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-indigo-300 text-xs font-semibold mb-1">City</label>
+                      <input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-indigo-300 text-xs font-semibold mb-1">State</label>
+                      <input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="block text-indigo-300 text-xs font-semibold mb-1">Employees</label>
+                      <input type="number" placeholder="0" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-indigo-300 text-xs font-semibold mb-1">Manager/Contact Name</label>
+                    <input type="text" placeholder="Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                  </div>
+                  <div>
+                    <label className="block text-indigo-300 text-sm font-semibold mb-2">Contact Email</label>
+                    <input type="email" placeholder="Contact email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:border-indigo-500 focus:outline-none transition" />
+                  </div>
+                  <div className="border-t border-gray-600 pt-3 mt-3">
+                    <p className="text-indigo-300 text-sm font-semibold mb-3">🔐 Dashboard Login</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-indigo-300 text-xs font-semibold mb-1">Username *</label>
+                        <input type="text" placeholder="Username" value={partnerForm.username || ''} onChange={(e) => setPartnerForm({...partnerForm, username: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                      </div>
+                      <div>
+                        <label className="block text-indigo-300 text-xs font-semibold mb-1">Password *</label>
+                        <input type="password" placeholder="Password" value={partnerForm.password || ''} onChange={(e) => setPartnerForm({...partnerForm, password: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-indigo-500 focus:outline-none transition" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4 space-y-2">
+                    <p className="text-indigo-300 text-sm font-bold">Selected Models: {partnerForm.allocated_models.length}</p>
+                    <button onClick={() => {if(editingOfficeId) {const updatedOffices = offices.map(o => o.id === editingOfficeId ? {...partnerForm, id: editingOfficeId} : o); setOffices(updatedOffices); setEditingOfficeId(null);} else {setOffices([...offices, {...partnerForm, id: Date.now()}]); } setShowOfficeForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: [], username: '', password: ''});}} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded font-bold">{editingOfficeId ? 'Update' : 'Add'} Office</button>
+                  </div>
+                </div>
               </div>
+
+              {/* RIGHT SIDE: AI MODELS GRID (2 COLUMNS) */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-indigo-300">📚 SELECT AI MODELS</h3>
+                <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto bg-gray-700 p-4 rounded border border-gray-600">
+                  {sortModelsByPriority(allModels).map(model => (
+                    <label key={model.id} className="flex items-start gap-3 p-3 bg-gray-800 rounded border border-gray-500 hover:border-indigo-500 cursor-pointer transition">
+                      <input
+                        type="checkbox"
+                        checked={partnerForm.allocated_models.includes(model.id)}
+                        onChange={(e) => setPartnerForm({...partnerForm, allocated_models: e.target.checked ? [...partnerForm.allocated_models, model.id] : partnerForm.allocated_models.filter(m => m !== model.id)})}
+                        className="rounded mt-1"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-indigo-300">{model.icon} {model.name}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {offices.map(item => (<div key={item.id} className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-indigo-500"><div className="flex justify-between items-start mb-4"><div><h3 className="text-2xl font-bold text-indigo-300">🏢 {item.name}</h3><p className="text-gray-400 text-sm">{item.contact_name}</p></div><button onClick={() => setOffices(offices.filter(o => o.id !== item.id))} className="text-red-500 hover:text-red-700"><Trash2 size={20} /></button></div><div className="text-sm text-gray-300 space-y-1"><p>📧 {item.email}</p><p>📱 {item.phone}</p><p>📍 {item.address}, {item.city}</p><p>👥 {item.members} employees</p><p className="text-indigo-400 font-bold">📚 {item.allocated_models.length} models</p></div></div>))}
-            </div>
+            {/* OFFICES LIST */}
+            {offices.length > 0 && (
+              <div className="space-y-6 mt-8">
+                <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-xl p-4 shadow-lg">
+                  <h3 className="text-2xl font-bold text-white">📋 Added Offices ({offices.length})</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {offices.map(item => (
+                    <div key={item.id} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-lg p-6 border border-indigo-500/30 hover:border-indigo-500 hover:shadow-2xl transition">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-2xl font-bold text-indigo-300">🏢 {item.name}</h3>
+                          <p className="text-indigo-400 text-sm font-semibold">{item.contact_name}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => {setEditingOfficeId(item.id); setPartnerForm({...item}); setShowOfficeForm(true);}} className="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 p-2 rounded-lg transition">
+                            <Edit2 size={18} />
+                          </button>
+                          <button onClick={() => setOffices(offices.filter(o => o.id !== item.id))} className="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 p-2 rounded-lg transition">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-gray-300"><span>📧</span>{item.email}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📱</span>{item.phone}</div>
+                        <div className="flex items-center gap-2 text-gray-300"><span>📍</span>{item.address}, {item.city}</div>
+                        <div className="bg-indigo-600/20 border border-indigo-500/30 rounded-lg p-3 mt-3">
+                          <p className="text-indigo-400 font-bold text-lg">👥 {item.members} Employees</p>
+                        </div>
+                        <div className="text-indigo-400 font-bold pt-2">📚 {(item.allocated_models || []).length} models allocated</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -586,9 +1263,9 @@ const VijayCareDashboardComplete = () => {
             <h2 className="text-3xl font-bold text-white mb-2">AI Medical Models</h2>
             <p className="text-gray-400 text-lg mb-6">All {allModels.length} Available AI Diagnostic Models</p>
 
-            {/* Single Grid - All Models */}
+            {/* Single Grid - All Models (Heart & ENT at top) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {allModels.map((model, index) => {
+              {sortModelsByPriority(allModels).map((model, index) => {
                 const borderColors = [
                   'border-red-500', 'border-orange-500', 'border-yellow-500', 'border-blue-500',
                   'border-cyan-500', 'border-green-500', 'border-purple-500', 'border-pink-500',
@@ -620,30 +1297,74 @@ const VijayCareDashboardComplete = () => {
         {/* SETTINGS */}
         {activeTab === 'settings' && (
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-yellow-400">Settings</h2>
-            <div className="bg-gray-800 rounded-lg shadow-lg p-8 border-l-4 border-yellow-500">
+            <h2 className="text-3xl font-bold text-yellow-400">Settings & Profile</h2>
+
+            {/* Vijay Profile */}
+            <div className="bg-gray-800 rounded-lg shadow-lg p-8 border-l-4 border-blue-500">
               <div className="flex items-center gap-6 mb-6">
-                <img src="/logos/Vijay.jpeg" alt="Vijay" className="h-24 w-24 rounded-full border-4 border-yellow-500 object-cover" />
+                <img src="/logos/Vijay.jpeg" alt="Vijay" className="h-24 w-24 rounded-full border-4 border-blue-500 object-cover" />
                 <div>
-                  <h3 className="text-2xl font-bold text-yellow-400">Organization Info</h3>
-                  <p className="text-gray-400">Manage your organization</p>
+                  <h3 className="text-2xl font-bold text-blue-400">Vijay Profile</h3>
+                  <p className="text-gray-400">Manage your personal details</p>
                 </div>
               </div>
-              <div className="space-y-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <p className="text-yellow-300 font-semibold">Organization</p>
-                  <p className="text-xl font-bold text-white mt-1">{orgName}</p>
+                  <label className="text-yellow-300 font-semibold block mb-2">Name</label>
+                  <input type="text" value={profile.name} onChange={(e) => setProfile({...profile, name: e.target.value})} className="w-full bg-gray-700 border border-gray-600 px-4 py-2 rounded text-white" />
                 </div>
                 <div>
-                  <p className="text-yellow-300 font-semibold">Access Token</p>
-                  <div className="flex gap-2 mt-2 bg-gray-700 p-3 rounded">
-                    <input type="text" value={orgToken} readOnly className="flex-1 bg-gray-600 border border-gray-500 px-3 py-2 rounded text-sm text-gray-300" />
-                    <button onClick={() => simpleCopy(orgToken, 'org')} className="bg-yellow-600 text-white px-4 py-2 rounded font-bold">
-                      {copiedToken === 'org' ? 'Copied!' : 'Copy'}
-                    </button>
+                  <label className="text-yellow-300 font-semibold block mb-2">Email</label>
+                  <input type="email" value={profile.email} onChange={(e) => setProfile({...profile, email: e.target.value})} className="w-full bg-gray-700 border border-gray-600 px-4 py-2 rounded text-white" />
+                </div>
+                <div>
+                  <label className="text-yellow-300 font-semibold block mb-2">Phone</label>
+                  <input type="tel" value={profile.phone} onChange={(e) => setProfile({...profile, phone: e.target.value})} className="w-full bg-gray-700 border border-gray-600 px-4 py-2 rounded text-white" />
+                </div>
+                <div>
+                  <label className="text-yellow-300 font-semibold block mb-2">Organization</label>
+                  <input type="text" value={profile.organization} disabled className="w-full bg-gray-700 border border-gray-600 px-4 py-2 rounded text-gray-400" />
+                </div>
+              </div>
+
+              <div className="border-t border-gray-700 pt-6 mt-6">
+                <h4 className="text-lg font-bold text-yellow-400 mb-4">Change Password</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-yellow-300 font-semibold block mb-2">Old Password</label>
+                    <input type="password" value={profile.oldPassword} onChange={(e) => setProfile({...profile, oldPassword: e.target.value})} className="w-full bg-gray-700 border border-gray-600 px-4 py-2 rounded text-white" />
+                  </div>
+                  <div>
+                    <label className="text-yellow-300 font-semibold block mb-2">New Password</label>
+                    <input type="password" value={profile.newPassword} onChange={(e) => setProfile({...profile, newPassword: e.target.value})} className="w-full bg-gray-700 border border-gray-600 px-4 py-2 rounded text-white" />
+                  </div>
+                  <div>
+                    <label className="text-yellow-300 font-semibold block mb-2">Confirm Password</label>
+                    <input type="password" value={profile.confirmPassword} onChange={(e) => setProfile({...profile, confirmPassword: e.target.value})} className="w-full bg-gray-700 border border-gray-600 px-4 py-2 rounded text-white" />
                   </div>
                 </div>
+                <div className="flex gap-4 mt-4">
+                  <button onClick={() => alert('Profile updated successfully!')} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-bold">Save Changes</button>
+                  <button onClick={() => alert('Password changed successfully!')} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-bold">Update Password</button>
+                </div>
               </div>
+            </div>
+
+            {/* LOGOUT SECTION */}
+            <div className="bg-gradient-to-br from-red-900 to-red-800 rounded-lg shadow-lg p-8 border-l-4 border-red-500">
+              <div className="flex items-center gap-6 mb-6">
+                <div className="bg-red-600 p-4 rounded-full">
+                  <LogOut size={32} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-red-300">Logout</h3>
+                  <p className="text-red-200">Sign out of your account</p>
+                </div>
+              </div>
+              <button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-bold transition">
+                Logout Now
+              </button>
             </div>
           </div>
         )}

@@ -7,6 +7,18 @@ from utils.image_classifier import route_model
 # from llm.qwen_client import ask_together, build_response_json
 # from utils.pdf_final import create_exact_medical_report
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Import email service
+try:
+    from services.email_service import email_service
+    EMAIL_SERVICE_AVAILABLE = True
+except:
+    EMAIL_SERVICE_AVAILABLE = False
+    print("[WARNING] Email service not available")
 
 # Stub implementations for disabled modules
 def ask_together(prompt):
@@ -37,6 +49,77 @@ def get_db_connection():
     return conn
 
 
+# Validation Helpers
+def validate_email(email):
+    """Validate email format"""
+    if not email or not isinstance(email, str):
+        return False
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+
+def validate_required_fields(data: dict, required_fields: list):
+    """Validate required fields in request data"""
+    missing = []
+    for field in required_fields:
+        if field not in data or not data[field]:
+            missing.append(field)
+    if missing:
+        return False, f"Missing required fields: {', '.join(missing)}"
+    return True, None
+
+
+def validate_input(data: dict, rules: dict):
+    """
+    Validate input data against rules
+    rules = {
+        'email': {'required': True, 'type': str, 'validate': 'email'},
+        'password': {'required': True, 'type': str, 'min_length': 6},
+        'name': {'required': True, 'type': str, 'max_length': 100},
+        'phone': {'required': False, 'type': str, 'pattern': r'^\d{10}$'}
+    }
+    """
+    errors = {}
+
+    for field, rule in rules.items():
+        value = data.get(field)
+
+        # Check required
+        if rule.get('required', False) and not value:
+            errors[field] = f"{field} is required"
+            continue
+
+        if not value and not rule.get('required', False):
+            continue
+
+        # Check type
+        if 'type' in rule and not isinstance(value, rule['type']):
+            errors[field] = f"{field} must be {rule['type'].__name__}"
+            continue
+
+        # Check custom validation
+        if rule.get('validate') == 'email' and not validate_email(value):
+            errors[field] = f"{field} must be a valid email"
+            continue
+
+        # Check min_length
+        if 'min_length' in rule and len(str(value)) < rule['min_length']:
+            errors[field] = f"{field} must be at least {rule['min_length']} characters"
+            continue
+
+        # Check max_length
+        if 'max_length' in rule and len(str(value)) > rule['max_length']:
+            errors[field] = f"{field} must be at most {rule['max_length']} characters"
+            continue
+
+        # Check pattern
+        if 'pattern' in rule and not re.match(rule['pattern'], str(value)):
+            errors[field] = f"{field} format is invalid"
+            continue
+
+    return len(errors) == 0, errors
+
+
 app = FastAPI(
     title="MacvaarAi Testing API",
     description="MacvaarAi Health Assistant Backend API — for Eye, ECG, Pneumonia, Malaria, Diabetes, Ear, Lung, Skin, Throat, Nose, Covid, Dengue.",
@@ -53,6 +136,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include organization authentication routes
+try:
+    from app.routes.org_auth import router as org_auth_router
+    app.include_router(org_auth_router)
+    print("[SUCCESS] Organization auth router loaded")
+except Exception as e:
+    print(f"[WARNING] Could not load org_auth router: {e}")
 
 # Serve static files (hospital logos)
 os.makedirs("uploads", exist_ok=True)
@@ -504,6 +595,1221 @@ async def admin_login(request: Request):
         return {"status": "error", "message": str(e)}
 
 
+@app.post("/auth/login")
+async def unified_login(request: Request):
+    """
+    UNIFIED LOGIN ENDPOINT - Consolidates all organization type logins
+    Request: {
+        "email": "user@example.com",
+        "password": "password123",
+        "org_type": "admin" | "organization" | "hospital" | "school" | "district" | "police" | "women" | "office"
+    }
+    Response: Standardized format with org_id, org_name, org_type
+    """
+    try:
+        data = await request.json()
+        email = data.get("email", "").strip()
+        password = data.get("password", "")
+        org_type = data.get("org_type", "").lower()
+
+        if not email or not password:
+            return {"status": "error", "message": "Email and password required"}
+
+        if not org_type:
+            return {"status": "error", "message": "org_type required (admin, organization, hospital, school, district, police, women, office)"}
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Map org_type to table and query
+        org_config = {
+            "admin": {
+                "table": "admin_users",
+                "id_col": "id",
+                "name_col": "name",
+                "role_col": "role"
+            },
+            "organization": {
+                "table": "organizations",
+                "id_col": "id",
+                "name_col": "name"
+            },
+            "hospital": {
+                "table": "hospitals",
+                "id_col": "id",
+                "name_col": "name"
+            },
+            "school": {
+                "table": "schools",
+                "id_col": "id",
+                "name_col": "name"
+            },
+            "district": {
+                "table": "districts",
+                "id_col": "id",
+                "name_col": "name"
+            },
+            "police": {
+                "table": "police_org",
+                "id_col": "id",
+                "name_col": "name"
+            },
+            "women": {
+                "table": "women_org",
+                "id_col": "id",
+                "name_col": "name"
+            },
+            "office": {
+                "table": "offices",
+                "id_col": "id",
+                "name_col": "name"
+            }
+        }
+
+        if org_type not in org_config:
+            return {"status": "error", "message": f"Invalid org_type: {org_type}"}
+
+        config = org_config[org_type]
+        table = config["table"]
+        id_col = config["id_col"]
+        name_col = config["name_col"]
+
+        # Query the appropriate table
+        query = f"SELECT {id_col} as id, name, email, password FROM {table} WHERE email = ? AND password = ?"
+        cursor.execute(query, (email, password))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            response = {
+                "status": "success",
+                "org_id": user["id"],
+                "org_name": user["name"],
+                "org_type": org_type,
+                "email": user["email"],
+                "message": f"Welcome {user['name']}"
+            }
+
+            # Add role if admin
+            if org_type == "admin":
+                conn2 = get_db_connection()
+                cursor2 = conn2.cursor()
+                cursor2.execute("SELECT role FROM admin_users WHERE id = ?", (user["id"],))
+                admin_data = cursor2.fetchone()
+                conn2.close()
+                if admin_data:
+                    response["role"] = admin_data["role"]
+
+            return response
+
+        return {"status": "error", "message": "Invalid email or password for this organization type"}
+
+    except Exception as e:
+        return {"status": "error", "message": f"Login error: {str(e)}"}
+
+
+@app.get("/admin/hospitals")
+async def admin_get_hospitals(limit: int = 100, offset: int = 0):
+    """
+    Get all hospitals with pagination
+    Query: ?limit=100&offset=0
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Get total count
+        cursor.execute("SELECT COUNT(*) as total FROM hospitals")
+        total = cursor.fetchone()["total"]
+
+        # Get paginated results
+        cursor.execute("""
+            SELECT id, name, email, phone, city, state, password, created_at
+            FROM hospitals
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        """, (limit, offset))
+
+        hospitals = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+
+        return {
+            "status": "success",
+            "data": hospitals,
+            "pagination": {
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "count": len(hospitals)
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Database error: {str(e)}", "code": 500}
+
+
+@app.post("/admin/hospitals")
+async def admin_create_hospital(request: Request):
+    """
+    Create new hospital
+    Required: name, email, password, phone, city, state
+    Optional: address, zip_code
+    """
+    try:
+        data = await request.json()
+
+        # Validate required fields
+        valid, errors = validate_input(data, {
+            "name": {"required": True, "type": str, "min_length": 2, "max_length": 100},
+            "email": {"required": True, "type": str, "validate": "email"},
+            "password": {"required": True, "type": str, "min_length": 6},
+            "phone": {"required": True, "type": str},
+            "city": {"required": True, "type": str},
+            "state": {"required": True, "type": str},
+            "address": {"required": False, "type": str},
+            "zip_code": {"required": False, "type": str}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Check if email already exists
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM hospitals WHERE email = ?", (data["email"],))
+        if cursor.fetchone():
+            conn.close()
+            return {"status": "error", "message": "Email already exists", "code": 409}
+
+        # Insert hospital
+        cursor.execute("""
+            INSERT INTO hospitals (name, email, password, phone, city, state, address, zip_code, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data["name"],
+            data["email"],
+            data["password"],
+            data["phone"],
+            data["city"],
+            data["state"],
+            data.get("address", ""),
+            data.get("zip_code", ""),
+            datetime.now().isoformat()
+        ))
+
+        hospital_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": f"Hospital '{data['name']}' created successfully",
+            "data": {
+                "id": hospital_id,
+                "name": data["name"],
+                "email": data["email"]
+            },
+            "code": 201
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error creating hospital: {str(e)}", "code": 500}
+
+
+@app.get("/admin/hospitals/{hospital_id}")
+async def admin_get_hospital(hospital_id: int):
+    """Get single hospital details"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, name, email, phone, city, state, address, zip_code, password, created_at
+            FROM hospitals
+            WHERE id = ?
+        """, (hospital_id,))
+
+        hospital = cursor.fetchone()
+        conn.close()
+
+        if not hospital:
+            return {"status": "error", "message": "Hospital not found", "code": 404}
+
+        return {
+            "status": "success",
+            "data": dict(hospital)
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Database error: {str(e)}", "code": 500}
+
+
+@app.put("/admin/hospitals/{hospital_id}")
+async def admin_update_hospital(hospital_id: int, request: Request):
+    """
+    Update hospital details
+    Editable fields: name, phone, city, state, address, zip_code, password
+    """
+    try:
+        data = await request.json()
+
+        # Validate input
+        valid, errors = validate_input(data, {
+            "name": {"required": False, "type": str, "min_length": 2, "max_length": 100},
+            "phone": {"required": False, "type": str},
+            "city": {"required": False, "type": str},
+            "state": {"required": False, "type": str},
+            "address": {"required": False, "type": str},
+            "zip_code": {"required": False, "type": str},
+            "password": {"required": False, "type": str, "min_length": 6}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Build update query dynamically
+        update_fields = []
+        values = []
+        for field in ["name", "phone", "city", "state", "address", "zip_code", "password"]:
+            if field in data and data[field]:
+                update_fields.append(f"{field} = ?")
+                values.append(data[field])
+
+        if not update_fields:
+            return {"status": "error", "message": "No fields to update", "code": 400}
+
+        values.append(hospital_id)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE hospitals SET {', '.join(update_fields)} WHERE id = ?", values)
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            conn.close()
+            return {"status": "error", "message": "Hospital not found", "code": 404}
+
+        conn.close()
+        return {
+            "status": "success",
+            "message": "Hospital updated successfully",
+            "code": 200
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error updating hospital: {str(e)}", "code": 500}
+
+
+@app.delete("/admin/hospitals/{hospital_id}")
+async def admin_delete_hospital(hospital_id: int):
+    """Delete hospital"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if hospital exists
+        cursor.execute("SELECT name FROM hospitals WHERE id = ?", (hospital_id,))
+        hospital = cursor.fetchone()
+
+        if not hospital:
+            conn.close()
+            return {"status": "error", "message": "Hospital not found", "code": 404}
+
+        # Delete hospital
+        cursor.execute("DELETE FROM hospitals WHERE id = ?", (hospital_id,))
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": f"Hospital '{hospital['name']}' deleted successfully",
+            "code": 200
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error deleting hospital: {str(e)}", "code": 500}
+
+
+@app.get("/admin/hospitals/{hospital_id}/stats")
+async def admin_get_hospital_stats(hospital_id: int):
+    """Get combined hospital statistics (dashboard, performance, analytics)"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verify hospital exists
+        cursor.execute("SELECT name FROM hospitals WHERE id = ?", (hospital_id,))
+        hospital = cursor.fetchone()
+
+        if not hospital:
+            return {"status": "error", "message": "Hospital not found", "code": 404}
+
+        # Get stats
+        cursor.execute("""
+            SELECT
+                (SELECT COUNT(*) FROM patients WHERE hospital_id = ?) as total_patients,
+                (SELECT COUNT(*) FROM consultations WHERE hospital_id = ? AND status = 'completed') as completed_consultations,
+                (SELECT COUNT(*) FROM consultations WHERE hospital_id = ? AND status = 'pending') as pending_consultations,
+                (SELECT COUNT(*) FROM feedback WHERE hospital_id = ?) as total_feedback
+        """, (hospital_id, hospital_id, hospital_id, hospital_id))
+
+        stats = cursor.fetchone()
+        conn.close()
+
+        return {
+            "status": "success",
+            "data": {
+                "hospital_name": hospital["name"],
+                "hospital_id": hospital_id,
+                "dashboard": {
+                    "total_patients": stats[0] or 0,
+                    "completed_consultations": stats[1] or 0,
+                    "pending_consultations": stats[2] or 0
+                },
+                "feedback": {
+                    "total_feedback": stats[3] or 0
+                }
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error fetching stats: {str(e)}", "code": 500}
+
+
+@app.get("/admin/organizations")
+async def admin_get_organizations(limit: int = 100, offset: int = 0):
+    """
+    Get all organizations with pagination
+    Query: ?limit=100&offset=0
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Get total count
+        cursor.execute("SELECT COUNT(*) as total FROM organizations")
+        total = cursor.fetchone()["total"]
+
+        # Get paginated results
+        cursor.execute("""
+            SELECT id, name, email, phone, city, state, password, created_at
+            FROM organizations
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        """, (limit, offset))
+
+        organizations = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+
+        return {
+            "status": "success",
+            "data": organizations,
+            "pagination": {
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "count": len(organizations)
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Database error: {str(e)}", "code": 500}
+
+
+@app.post("/admin/organizations")
+async def admin_create_organization(request: Request):
+    """
+    Create new organization
+    Required: name, email, password, phone, city, state
+    Optional: address, zip_code
+    """
+    try:
+        data = await request.json()
+
+        # Validate required fields
+        valid, errors = validate_input(data, {
+            "name": {"required": True, "type": str, "min_length": 2, "max_length": 100},
+            "email": {"required": True, "type": str, "validate": "email"},
+            "password": {"required": True, "type": str, "min_length": 6},
+            "phone": {"required": True, "type": str},
+            "city": {"required": True, "type": str},
+            "state": {"required": True, "type": str},
+            "address": {"required": False, "type": str},
+            "zip_code": {"required": False, "type": str}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Check if email already exists
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM organizations WHERE email = ?", (data["email"],))
+        if cursor.fetchone():
+            conn.close()
+            return {"status": "error", "message": "Email already exists", "code": 409}
+
+        # Insert organization
+        cursor.execute("""
+            INSERT INTO organizations (name, email, password, phone, city, state, address, zip_code, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data["name"],
+            data["email"],
+            data["password"],
+            data["phone"],
+            data["city"],
+            data["state"],
+            data.get("address", ""),
+            data.get("zip_code", ""),
+            datetime.now().isoformat()
+        ))
+
+        org_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": f"Organization '{data['name']}' created successfully",
+            "data": {
+                "id": org_id,
+                "name": data["name"],
+                "email": data["email"]
+            },
+            "code": 201
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error creating organization: {str(e)}", "code": 500}
+
+
+@app.get("/admin/organizations/{org_id}")
+async def admin_get_organization(org_id: int):
+    """Get single organization details"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, name, email, phone, city, state, address, zip_code, password, created_at
+            FROM organizations
+            WHERE id = ?
+        """, (org_id,))
+
+        org = cursor.fetchone()
+        conn.close()
+
+        if not org:
+            return {"status": "error", "message": "Organization not found", "code": 404}
+
+        return {
+            "status": "success",
+            "data": dict(org)
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Database error: {str(e)}", "code": 500}
+
+
+@app.put("/admin/organizations/{org_id}")
+async def admin_update_organization(org_id: int, request: Request):
+    """
+    Update organization details
+    Editable fields: name, phone, city, state, address, zip_code, password
+    """
+    try:
+        data = await request.json()
+
+        # Validate input
+        valid, errors = validate_input(data, {
+            "name": {"required": False, "type": str, "min_length": 2, "max_length": 100},
+            "phone": {"required": False, "type": str},
+            "city": {"required": False, "type": str},
+            "state": {"required": False, "type": str},
+            "address": {"required": False, "type": str},
+            "zip_code": {"required": False, "type": str},
+            "password": {"required": False, "type": str, "min_length": 6}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Build update query dynamically
+        update_fields = []
+        values = []
+        for field in ["name", "phone", "city", "state", "address", "zip_code", "password"]:
+            if field in data and data[field]:
+                update_fields.append(f"{field} = ?")
+                values.append(data[field])
+
+        if not update_fields:
+            return {"status": "error", "message": "No fields to update", "code": 400}
+
+        values.append(org_id)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE organizations SET {', '.join(update_fields)} WHERE id = ?", values)
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            conn.close()
+            return {"status": "error", "message": "Organization not found", "code": 404}
+
+        conn.close()
+        return {
+            "status": "success",
+            "message": "Organization updated successfully",
+            "code": 200
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error updating organization: {str(e)}", "code": 500}
+
+
+@app.delete("/admin/organizations/{org_id}")
+async def admin_delete_organization(org_id: int):
+    """Delete organization"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if organization exists
+        cursor.execute("SELECT name FROM organizations WHERE id = ?", (org_id,))
+        org = cursor.fetchone()
+
+        if not org:
+            conn.close()
+            return {"status": "error", "message": "Organization not found", "code": 404}
+
+        # Delete organization
+        cursor.execute("DELETE FROM organizations WHERE id = ?", (org_id,))
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": f"Organization '{org['name']}' deleted successfully",
+            "code": 200
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error deleting organization: {str(e)}", "code": 500}
+
+
+@app.get("/admin/organizations/{org_id}/sub-organizations")
+async def admin_get_sub_organizations(org_id: int):
+    """
+    Get all sub-organizations under an organization
+    Returns: hospitals, schools, districts, police, women_orgs, offices
+    """
+    try:
+        # Verify organization exists
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM organizations WHERE id = ?", (org_id,))
+        org = cursor.fetchone()
+
+        if not org:
+            return {"status": "error", "message": "Organization not found", "code": 404}
+
+        # Get sub-organizations counts and data
+        sub_orgs = {}
+
+        # Get hospitals
+        cursor.execute("SELECT COUNT(*) as count FROM hospitals WHERE organization_id = ? OR id > 0", (org_id,))
+        hospitals_count = cursor.fetchone()["count"]
+        cursor.execute("SELECT id, name, email, city FROM hospitals LIMIT 10")
+        sub_orgs["hospitals"] = {
+            "count": hospitals_count,
+            "sample": [dict(row) for row in cursor.fetchall()]
+        }
+
+        # Get schools
+        cursor.execute("SELECT COUNT(*) as count FROM schools")
+        schools_count = cursor.fetchone()["count"]
+        cursor.execute("SELECT id, name, email FROM schools LIMIT 10")
+        sub_orgs["schools"] = {
+            "count": schools_count,
+            "sample": [dict(row) for row in cursor.fetchall()]
+        }
+
+        # Get districts
+        cursor.execute("SELECT COUNT(*) as count FROM districts")
+        districts_count = cursor.fetchone()["count"]
+        cursor.execute("SELECT id, name, email FROM districts LIMIT 10")
+        sub_orgs["districts"] = {
+            "count": districts_count,
+            "sample": [dict(row) for row in cursor.fetchall()]
+        }
+
+        # Get police organizations
+        cursor.execute("SELECT COUNT(*) as count FROM police_org")
+        police_count = cursor.fetchone()["count"]
+        cursor.execute("SELECT id, name, email FROM police_org LIMIT 10")
+        sub_orgs["police_organizations"] = {
+            "count": police_count,
+            "sample": [dict(row) for row in cursor.fetchall()]
+        }
+
+        # Get women organizations
+        cursor.execute("SELECT COUNT(*) as count FROM women_org")
+        women_count = cursor.fetchone()["count"]
+        cursor.execute("SELECT id, name, email FROM women_org LIMIT 10")
+        sub_orgs["women_organizations"] = {
+            "count": women_count,
+            "sample": [dict(row) for row in cursor.fetchall()]
+        }
+
+        # Get offices
+        cursor.execute("SELECT COUNT(*) as count FROM offices")
+        offices_count = cursor.fetchone()["count"]
+        cursor.execute("SELECT id, name, email FROM offices LIMIT 10")
+        sub_orgs["offices"] = {
+            "count": offices_count,
+            "sample": [dict(row) for row in cursor.fetchall()]
+        }
+
+        conn.close()
+
+        return {
+            "status": "success",
+            "data": {
+                "organization_id": org_id,
+                "organization_name": org["name"],
+                "sub_organizations": sub_orgs
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error fetching sub-organizations: {str(e)}", "code": 500}
+
+
+@app.get("/admin/models")
+async def admin_get_models(limit: int = 100, offset: int = 0):
+    """
+    Get all AI models with pagination
+    Query: ?limit=100&offset=0
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Get total count
+        cursor.execute("SELECT COUNT(*) as total FROM ai_models WHERE status = 'active'")
+        total = cursor.fetchone()["total"]
+
+        # Get paginated results
+        cursor.execute("""
+            SELECT id, model_id, name, category, price, description, accuracy, status, created_at
+            FROM ai_models
+            WHERE status = 'active'
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        """, (limit, offset))
+
+        models = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+
+        return {
+            "status": "success",
+            "data": models,
+            "pagination": {
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "count": len(models)
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Database error: {str(e)}", "code": 500}
+
+
+@app.post("/admin/models")
+async def admin_create_model(request: Request):
+    """
+    Create new AI model
+    Required: name, category, price, description
+    Optional: accuracy, features, diseases_trained
+    """
+    try:
+        data = await request.json()
+
+        # Validate required fields
+        valid, errors = validate_input(data, {
+            "name": {"required": True, "type": str, "min_length": 2, "max_length": 100},
+            "category": {"required": True, "type": str, "min_length": 2},
+            "price": {"required": True, "type": (int, float)},
+            "description": {"required": True, "type": str, "min_length": 10},
+            "accuracy": {"required": False, "type": str},
+            "features": {"required": False, "type": list},
+            "diseases_trained": {"required": False, "type": list}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Validate price
+        if data["price"] < 0:
+            return {"status": "error", "message": "Price cannot be negative", "code": 400}
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Insert model
+        model_id = f"MODEL_{data['name'].upper().replace(' ', '_')}"
+        cursor.execute("""
+            INSERT INTO ai_models (model_id, name, category, price, description, accuracy, features, diseases_trained, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
+        """, (
+            model_id,
+            data["name"],
+            data["category"],
+            data["price"],
+            data["description"],
+            data.get("accuracy", "0%"),
+            json.dumps(data.get("features", [])),
+            json.dumps(data.get("diseases_trained", [])),
+            datetime.now().isoformat()
+        ))
+
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": f"Model '{data['name']}' created successfully",
+            "data": {
+                "model_id": model_id,
+                "name": data["name"],
+                "category": data["category"]
+            },
+            "code": 201
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error creating model: {str(e)}", "code": 500}
+
+
+@app.get("/admin/models/{model_id}")
+async def admin_get_model(model_id: str):
+    """Get single model details"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, model_id, name, category, price, description, accuracy, status, created_at
+            FROM ai_models
+            WHERE model_id = ? OR id = ?
+        """, (model_id, model_id))
+
+        model = cursor.fetchone()
+        conn.close()
+
+        if not model:
+            return {"status": "error", "message": "Model not found", "code": 404}
+
+        return {
+            "status": "success",
+            "data": dict(model)
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Database error: {str(e)}", "code": 500}
+
+
+@app.put("/admin/models/{model_id}")
+async def admin_update_model(model_id: str, request: Request):
+    """
+    Update model details
+    Editable fields: name, price, description, category, accuracy
+    """
+    try:
+        data = await request.json()
+
+        # Validate input
+        valid, errors = validate_input(data, {
+            "name": {"required": False, "type": str, "min_length": 2, "max_length": 100},
+            "price": {"required": False, "type": (int, float)},
+            "description": {"required": False, "type": str, "min_length": 10},
+            "category": {"required": False, "type": str},
+            "accuracy": {"required": False, "type": str}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Validate price if provided
+        if "price" in data and data["price"] < 0:
+            return {"status": "error", "message": "Price cannot be negative", "code": 400}
+
+        # Build update query
+        update_fields = ["updated_at = ?"]
+        values = [datetime.now().isoformat()]
+
+        for field in ["name", "price", "description", "category", "accuracy"]:
+            if field in data and data[field] is not None:
+                update_fields.append(f"{field} = ?")
+                values.append(data[field])
+
+        if len(update_fields) == 1:
+            return {"status": "error", "message": "No fields to update", "code": 400}
+
+        values.append(model_id)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE ai_models SET {', '.join(update_fields)} WHERE model_id = ? OR id = ?", values + [model_id])
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            conn.close()
+            return {"status": "error", "message": "Model not found", "code": 404}
+
+        conn.close()
+        return {
+            "status": "success",
+            "message": "Model updated successfully",
+            "code": 200
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error updating model: {str(e)}", "code": 500}
+
+
+@app.delete("/admin/models/{model_id}")
+async def admin_delete_model(model_id: str):
+    """Delete/deactivate model"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if model exists
+        cursor.execute("SELECT name FROM ai_models WHERE model_id = ? OR id = ?", (model_id, model_id))
+        model = cursor.fetchone()
+
+        if not model:
+            conn.close()
+            return {"status": "error", "message": "Model not found", "code": 404}
+
+        # Deactivate model
+        cursor.execute("UPDATE ai_models SET status = 'inactive' WHERE model_id = ? OR id = ?", (model_id, model_id))
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": f"Model deactivated successfully",
+            "code": 200
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error deleting model: {str(e)}", "code": 500}
+
+
+@app.get("/admin/support-tickets")
+async def admin_get_support_tickets(limit: int = 50, offset: int = 0, status: str = None):
+    """
+    Get support tickets with pagination and optional status filter
+    Query: ?limit=50&offset=0&status=open|closed|pending
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Build query
+        where_clause = "WHERE 1=1"
+        params = []
+        if status:
+            where_clause += " AND status = ?"
+            params.append(status)
+
+        # Get total count
+        cursor.execute(f"SELECT COUNT(*) as total FROM support_tickets {where_clause}", params)
+        total = cursor.fetchone()["total"]
+
+        # Get paginated results
+        cursor.execute(f"""
+            SELECT id, subject, description, status, priority, created_by, created_date, updated_date
+            FROM support_tickets
+            {where_clause}
+            ORDER BY created_date DESC
+            LIMIT ? OFFSET ?
+        """, params + [limit, offset])
+
+        tickets = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+
+        return {
+            "status": "success",
+            "data": tickets,
+            "pagination": {
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "count": len(tickets)
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Database error: {str(e)}", "code": 500}
+
+
+@app.post("/admin/support-tickets")
+async def admin_create_support_ticket(request: Request):
+    """
+    Create new support ticket
+    Required: subject, description, priority
+    Optional: assigned_to
+    """
+    try:
+        data = await request.json()
+
+        # Validate
+        valid, errors = validate_input(data, {
+            "subject": {"required": True, "type": str, "min_length": 5, "max_length": 200},
+            "description": {"required": True, "type": str, "min_length": 10},
+            "priority": {"required": True, "type": str},
+            "created_by": {"required": False, "type": str}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Validate priority
+        if data["priority"] not in ["low", "medium", "high", "critical"]:
+            return {"status": "error", "message": "Priority must be: low, medium, high, or critical", "code": 400}
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO support_tickets (subject, description, status, priority, created_by, created_date)
+            VALUES (?, ?, 'open', ?, ?, ?)
+        """, (
+            data["subject"],
+            data["description"],
+            data["priority"],
+            data.get("created_by", "admin"),
+            datetime.now().isoformat()
+        ))
+
+        ticket_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": "Support ticket created",
+            "data": {
+                "ticket_id": ticket_id,
+                "subject": data["subject"],
+                "priority": data["priority"]
+            },
+            "code": 201
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error creating ticket: {str(e)}", "code": 500}
+
+
+@app.put("/admin/support-tickets/{ticket_id}")
+async def admin_update_support_ticket(ticket_id: int, request: Request):
+    """
+    Update support ticket
+    Editable fields: status, priority, resolution_notes
+    """
+    try:
+        data = await request.json()
+
+        # Validate
+        valid, errors = validate_input(data, {
+            "status": {"required": False, "type": str},
+            "priority": {"required": False, "type": str},
+            "resolution_notes": {"required": False, "type": str}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Validate status if provided
+        if "status" in data and data["status"] not in ["open", "pending", "closed"]:
+            return {"status": "error", "message": "Status must be: open, pending, or closed", "code": 400}
+
+        # Validate priority if provided
+        if "priority" in data and data["priority"] not in ["low", "medium", "high", "critical"]:
+            return {"status": "error", "message": "Priority must be: low, medium, high, or critical", "code": 400}
+
+        # Build update query
+        update_fields = ["updated_date = ?"]
+        values = [datetime.now().isoformat()]
+
+        for field in ["status", "priority", "resolution_notes"]:
+            if field in data and data[field]:
+                update_fields.append(f"{field} = ?")
+                values.append(data[field])
+
+        if len(update_fields) == 1:
+            return {"status": "error", "message": "No fields to update", "code": 400}
+
+        values.append(ticket_id)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE support_tickets SET {', '.join(update_fields)} WHERE id = ?", values)
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            conn.close()
+            return {"status": "error", "message": "Ticket not found", "code": 404}
+
+        conn.close()
+        return {
+            "status": "success",
+            "message": "Ticket updated successfully",
+            "code": 200
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error updating ticket: {str(e)}", "code": 500}
+
+
+@app.get("/admin/feedback")
+async def admin_get_feedback(limit: int = 50, offset: int = 0, rating: int = None):
+    """
+    Get feedback with pagination and optional rating filter
+    Query: ?limit=50&offset=0&rating=5
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Build query
+        where_clause = "WHERE 1=1"
+        params = []
+        if rating:
+            where_clause += " AND rating = ?"
+            params.append(rating)
+
+        # Get total count
+        cursor.execute(f"SELECT COUNT(*) as total FROM feedback {where_clause}", params)
+        total = cursor.fetchone()["total"]
+
+        # Get paginated results
+        cursor.execute(f"""
+            SELECT id, message, rating, created_date, created_by
+            FROM feedback
+            {where_clause}
+            ORDER BY created_date DESC
+            LIMIT ? OFFSET ?
+        """, params + [limit, offset])
+
+        feedbacks = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+
+        return {
+            "status": "success",
+            "data": feedbacks,
+            "pagination": {
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "count": len(feedbacks)
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Database error: {str(e)}", "code": 500}
+
+
+@app.post("/admin/feedback")
+async def admin_create_feedback(request: Request):
+    """
+    Create new feedback
+    Required: message, rating
+    Optional: created_by
+    """
+    try:
+        data = await request.json()
+
+        # Validate
+        valid, errors = validate_input(data, {
+            "message": {"required": True, "type": str, "min_length": 5},
+            "rating": {"required": True, "type": int},
+            "created_by": {"required": False, "type": str}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Validate rating
+        if not (1 <= data["rating"] <= 5):
+            return {"status": "error", "message": "Rating must be between 1 and 5", "code": 400}
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO feedback (message, rating, created_by, created_date)
+            VALUES (?, ?, ?, ?)
+        """, (
+            data["message"],
+            data["rating"],
+            data.get("created_by", "user"),
+            datetime.now().isoformat()
+        ))
+
+        feedback_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": "Feedback created",
+            "data": {
+                "feedback_id": feedback_id,
+                "rating": data["rating"]
+            },
+            "code": 201
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error creating feedback: {str(e)}", "code": 500}
+
+
+@app.put("/admin/feedback/{feedback_id}")
+async def admin_update_feedback(feedback_id: int, request: Request):
+    """
+    Update feedback
+    Editable fields: message, rating
+    """
+    try:
+        data = await request.json()
+
+        # Validate
+        valid, errors = validate_input(data, {
+            "message": {"required": False, "type": str, "min_length": 5},
+            "rating": {"required": False, "type": int}
+        })
+
+        if not valid:
+            return {"status": "error", "message": "Validation failed", "errors": errors, "code": 400}
+
+        # Validate rating if provided
+        if "rating" in data and not (1 <= data["rating"] <= 5):
+            return {"status": "error", "message": "Rating must be between 1 and 5", "code": 400}
+
+        # Build update query
+        update_fields = ["updated_date = ?"]
+        values = [datetime.now().isoformat()]
+
+        for field in ["message", "rating"]:
+            if field in data and data[field] is not None:
+                update_fields.append(f"{field} = ?")
+                values.append(data[field])
+
+        if len(update_fields) == 1:
+            return {"status": "error", "message": "No fields to update", "code": 400}
+
+        values.append(feedback_id)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE feedback SET {', '.join(update_fields)} WHERE id = ?", values)
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            conn.close()
+            return {"status": "error", "message": "Feedback not found", "code": 404}
+
+        conn.close()
+        return {
+            "status": "success",
+            "message": "Feedback updated successfully",
+            "code": 200
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error updating feedback: {str(e)}", "code": 500}
+
+
 @app.post("/organization/login")
 async def organization_login(request: Request):
     """Organization login - email/password authentication"""
@@ -525,6 +1831,168 @@ async def organization_login(request: Request):
                 "org_name": org["name"],
                 "email": org["email"],
                 "message": f"Welcome {org['name']}"
+            }
+        return {"status": "error", "message": "Invalid credentials"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/hospital/login")
+async def hospital_login(request: Request):
+    """Hospital login - email/password authentication"""
+    try:
+        data = await request.json()
+        email = data.get("email", "")
+        password = data.get("password", "")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, email, password FROM hospitals WHERE email = ? AND password = ?", (email, password))
+        hospital = cursor.fetchone()
+        conn.close()
+
+        if hospital:
+            return {
+                "status": "success",
+                "hospital_id": hospital["id"],
+                "hospital_name": hospital["name"],
+                "email": hospital["email"],
+                "message": f"Welcome {hospital['name']}"
+            }
+        return {"status": "error", "message": "Invalid credentials"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/school/login")
+async def school_login(request: Request):
+    """School login - email/password authentication"""
+    try:
+        data = await request.json()
+        email = data.get("email", "")
+        password = data.get("password", "")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, email, password FROM schools WHERE email = ? AND password = ?", (email, password))
+        school = cursor.fetchone()
+        conn.close()
+
+        if school:
+            return {
+                "status": "success",
+                "school_id": school["id"],
+                "school_name": school["name"],
+                "email": school["email"],
+                "message": f"Welcome {school['name']}"
+            }
+        return {"status": "error", "message": "Invalid credentials"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/district/login")
+async def district_login(request: Request):
+    """District login - email/password authentication"""
+    try:
+        data = await request.json()
+        email = data.get("email", "")
+        password = data.get("password", "")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, email, password FROM districts WHERE email = ? AND password = ?", (email, password))
+        district = cursor.fetchone()
+        conn.close()
+
+        if district:
+            return {
+                "status": "success",
+                "district_id": district["id"],
+                "district_name": district["name"],
+                "email": district["email"],
+                "message": f"Welcome {district['name']}"
+            }
+        return {"status": "error", "message": "Invalid credentials"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/police/login")
+async def police_login(request: Request):
+    """Police organization login - email/password authentication"""
+    try:
+        data = await request.json()
+        email = data.get("email", "")
+        password = data.get("password", "")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, email, password FROM police_org WHERE email = ? AND password = ?", (email, password))
+        police = cursor.fetchone()
+        conn.close()
+
+        if police:
+            return {
+                "status": "success",
+                "police_id": police["id"],
+                "police_name": police["name"],
+                "email": police["email"],
+                "message": f"Welcome {police['name']}"
+            }
+        return {"status": "error", "message": "Invalid credentials"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/women/login")
+async def women_login(request: Request):
+    """Women organization login - email/password authentication"""
+    try:
+        data = await request.json()
+        email = data.get("email", "")
+        password = data.get("password", "")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, email, password FROM women_org WHERE email = ? AND password = ?", (email, password))
+        women = cursor.fetchone()
+        conn.close()
+
+        if women:
+            return {
+                "status": "success",
+                "women_id": women["id"],
+                "women_name": women["name"],
+                "email": women["email"],
+                "message": f"Welcome {women['name']}"
+            }
+        return {"status": "error", "message": "Invalid credentials"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/office/login")
+async def office_login(request: Request):
+    """Office login - email/password authentication"""
+    try:
+        data = await request.json()
+        email = data.get("email", "")
+        password = data.get("password", "")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, email, password FROM offices WHERE email = ? AND password = ?", (email, password))
+        office = cursor.fetchone()
+        conn.close()
+
+        if office:
+            return {
+                "status": "success",
+                "office_id": office["id"],
+                "office_name": office["name"],
+                "email": office["email"],
+                "message": f"Welcome {office['name']}"
             }
         return {"status": "error", "message": "Invalid credentials"}
     except Exception as e:
@@ -3549,3 +5017,220 @@ async def book_consultation(
 
     except Exception as e:
         return {'success': False, 'error': str(e)}
+
+
+# Endpoint to fetch allocated models for care organizations
+@app.get("/care/{org_type}/{org_id}/models")
+async def get_allocated_models(org_type: str, org_id: int):
+    """Get allocated models for a care organization (hospital, school, district, police, women, office)"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Map org_type to allocation table and ID column name
+        table_config = {
+            'hospital': ('hospital_model_allocations', 'hospital_id'),
+            'school': ('school_model_allocations', 'school_id'),
+            'district': ('district_model_allocations', 'district_id'),
+            'police': ('police_model_allocations', 'police_id'),
+            'women': ('women_model_allocations', 'women_org_id'),
+            'office': ('office_model_allocations', 'office_id')
+        }
+
+        config = table_config.get(org_type)
+        if not config:
+            conn.close()
+            return {"status": "error", "message": "Invalid organization type"}
+
+        allocation_table, id_column = config
+
+        # Get all models allocated to this organization
+        cursor.execute(f"""
+            SELECT DISTINCT model_id FROM {allocation_table}
+            WHERE {id_column} = ?
+        """, (org_id,))
+
+        allocated_models = cursor.fetchall()
+        conn.close()
+
+        # Convert model_ids to full model objects from AVAILABLE_MODELS
+        model_ids = [row[0] for row in allocated_models]
+        models = [m for m in AVAILABLE_MODELS if m['id'] in model_ids]
+
+        return {
+            "status": "success",
+            "org_type": org_type,
+            "org_id": org_id,
+            "allocated_models": models,
+            "count": len(models)
+        }
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+# ============================================================================
+# EMAIL NOTIFICATION ENDPOINTS
+# ============================================================================
+
+@app.post("/email/send-welcome")
+async def send_welcome_email(request: Request):
+    """
+    Send welcome email to new user
+    Required: user_name, user_email, organization_name
+    """
+    try:
+        if not EMAIL_SERVICE_AVAILABLE:
+            return {"status": "error", "message": "Email service not available", "code": 503}
+
+        data = await request.json()
+        required_fields = ["user_name", "user_email", "organization_name"]
+
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return {"status": "error", "message": f"Missing required field: {field}", "code": 400}
+
+        success = email_service.send_welcome_email(
+            user_name=data["user_name"],
+            user_email=data["user_email"],
+            organization_name=data.get("organization_name", "Vijay Care")
+        )
+
+        return {
+            "status": "success" if success else "error",
+            "message": "Welcome email sent successfully" if success else "Failed to send email",
+            "email": data["user_email"],
+            "code": 200 if success else 500
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e), "code": 500}
+
+
+@app.post("/email/send-password-reset")
+async def send_password_reset_email(request: Request):
+    """
+    Send password reset email
+    Required: user_email, user_name, reset_link
+    """
+    try:
+        if not EMAIL_SERVICE_AVAILABLE:
+            return {"status": "error", "message": "Email service not available", "code": 503}
+
+        data = await request.json()
+        required_fields = ["user_email", "user_name", "reset_link"]
+
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return {"status": "error", "message": f"Missing required field: {field}", "code": 400}
+
+        success = email_service.send_password_reset_email(
+            user_email=data["user_email"],
+            user_name=data["user_name"],
+            reset_link=data["reset_link"]
+        )
+
+        return {
+            "status": "success" if success else "error",
+            "message": "Password reset email sent successfully" if success else "Failed to send email",
+            "email": data["user_email"],
+            "code": 200 if success else 500
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e), "code": 500}
+
+
+@app.post("/email/send-ticket-update")
+async def send_ticket_update_email(request: Request):
+    """
+    Send support ticket update email
+    Required: user_email, ticket_id, status
+    Optional: update_message
+    """
+    try:
+        if not EMAIL_SERVICE_AVAILABLE:
+            return {"status": "error", "message": "Email service not available", "code": 503}
+
+        data = await request.json()
+        required_fields = ["user_email", "ticket_id", "status"]
+
+        for field in required_fields:
+            if field not in data or data[field] is None:
+                return {"status": "error", "message": f"Missing required field: {field}", "code": 400}
+
+        success = email_service.send_ticket_update_email(
+            user_email=data["user_email"],
+            ticket_id=data["ticket_id"],
+            status=data["status"],
+            update_message=data.get("update_message", "")
+        )
+
+        return {
+            "status": "success" if success else "error",
+            "message": "Ticket update email sent successfully" if success else "Failed to send email",
+            "email": data["user_email"],
+            "code": 200 if success else 500
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e), "code": 500}
+
+
+@app.post("/email/send-organization-created")
+async def send_organization_created_email(request: Request):
+    """
+    Send email when organization is created
+    Required: org_email, org_name
+    Optional: login_url
+    """
+    try:
+        if not EMAIL_SERVICE_AVAILABLE:
+            return {"status": "error", "message": "Email service not available", "code": 503}
+
+        data = await request.json()
+        required_fields = ["org_email", "org_name"]
+
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return {"status": "error", "message": f"Missing required field: {field}", "code": 400}
+
+        success = email_service.send_organization_created_email(
+            org_email=data["org_email"],
+            org_name=data["org_name"],
+            login_url=data.get("login_url")
+        )
+
+        return {
+            "status": "success" if success else "error",
+            "message": "Organization creation email sent successfully" if success else "Failed to send email",
+            "email": data["org_email"],
+            "code": 200 if success else 500
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e), "code": 500}
+
+
+@app.get("/email/status")
+async def email_service_status():
+    """Check if email service is configured and working"""
+    import os
+
+    email_configured = bool(
+        os.getenv("GMAIL_ADDRESS") and
+        os.getenv("GMAIL_PASSWORD")
+    )
+
+    return {
+        "email_service_available": EMAIL_SERVICE_AVAILABLE,
+        "email_configured": email_configured,
+        "gmail_address": os.getenv("GMAIL_ADDRESS", "Not configured"),
+        "notifications_enabled": {
+            "welcome": os.getenv("SEND_WELCOME_EMAIL") == "true",
+            "password_reset": os.getenv("SEND_PASSWORD_RESET_EMAIL") == "true",
+            "ticket_updates": os.getenv("SEND_TICKET_UPDATE_EMAIL") == "true",
+            "organization_created": os.getenv("SEND_ORGANIZATION_CREATED_EMAIL") == "true"
+        }
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
