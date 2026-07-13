@@ -2,8 +2,8 @@ import re
 from fastapi import FastAPI, UploadFile, File, Form, Depends, Request
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
-from utils.file_utils import detect_file_type
-from utils.image_classifier import route_model
+# from utils.file_utils import detect_file_type
+# from utils.image_classifier import route_model
 # from llm.qwen_client import ask_together, build_response_json
 # from utils.pdf_final import create_exact_medical_report
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,7 +31,7 @@ def create_exact_medical_report(*args, **kwargs):
     return None
 import os
 from enum import Enum
-from langdetect import detect
+# from langdetect import detect
 import sqlite3
 import json
 
