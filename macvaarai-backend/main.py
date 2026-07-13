@@ -40,9 +40,29 @@ import json
 
 from pydantic import BaseModel
 from typing import Optional, Union, Literal, List
-from models.admin_models import AVAILABLE_MODELS
 import uuid
 from datetime import datetime
+
+# Available AI Models (inline to avoid import issues)
+AVAILABLE_MODELS = [
+    {"id": "eye", "name": "Eye Disease Detection AI", "premium": True},
+    {"id": "covid", "name": "COVID-19 Detection AI", "premium": True},
+    {"id": "pneumonia", "name": "Pneumonia Detection AI", "premium": True},
+    {"id": "skin", "name": "Skin Cancer Detection AI", "premium": True},
+    {"id": "malaria", "name": "Malaria Detection AI", "premium": True},
+    {"id": "dengue", "name": "Dengue Detection AI", "premium": True},
+    {"id": "diabetes", "name": "Diabetes Detection AI", "premium": True},
+    {"id": "ear", "name": "Ear Infection Detection AI", "premium": True},
+    {"id": "nose", "name": "Nasal Polyp Detection AI", "premium": True},
+    {"id": "throat", "name": "Throat Disease Detection AI", "premium": True},
+    {"id": "oral", "name": "Oral Cancer Detection AI", "premium": True},
+    {"id": "pharyngitis", "name": "Pharyngitis Detection AI", "premium": True},
+    {"id": "colorectal", "name": "Colorectal Disease Detection AI", "premium": True},
+    {"id": "lung", "name": "Lung Disease Detection AI", "premium": True},
+    {"id": "onelead", "name": "1-Lead ECG Analysis AI", "premium": True},
+    {"id": "twelvelead", "name": "12-Lead ECG Analysis AI", "premium": True},
+    {"id": "vitamind", "name": "Vitamin Deficiency Detection AI", "premium": True},
+]
 
 # Database connection
 def get_db_connection():
@@ -303,13 +323,13 @@ def read_root():
     return {"message": "AI Health Assistant API is running. Use /docs to test the endpoints."}
 
 
-import pytesseract
-from PIL import Image
-import io
-import os
-import subprocess, tempfile, whisper, cv2
-from llm.chatbot_client import ask_chatbot
-from utils.preprocess import extract_text
+# import pytesseract  # Disabled for lightweight deployment
+# from PIL import Image
+# import io
+# import os
+# import subprocess, tempfile, whisper, cv2
+# from llm.chatbot_client import ask_chatbot
+# from utils.preprocess import extract_text
 from fastapi.responses import PlainTextResponse, FileResponse
 import json
 
