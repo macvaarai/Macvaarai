@@ -4371,8 +4371,8 @@ async def delete_organization_admin(admin_id: int):
 
 from urllib.request import urlopen
 from io import BytesIO
-from PIL import Image
-import numpy as np
+# from PIL import Image  # Disabled for lightweight deployment
+# import numpy as np  # Disabled for lightweight deployment
 
 @app.post("/predict/eye")
 async def predict_eye_endpoint(file: UploadFile = File(None)):
