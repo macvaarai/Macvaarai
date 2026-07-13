@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Cache bust marker - force Render rebuild
+_BUILD_ID = "care_portal_v2"
+
 # Import email service
 try:
     from services.email_service import email_service
