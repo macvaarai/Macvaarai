@@ -92,6 +92,7 @@ const HospitalTokenLogin = ({ apiUrl }) => {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
+          <img src="/logos/Macvaar.jpg" alt="Macvaar AI" className="h-20 w-20 rounded-full border-4 border-blue-500 object-cover mx-auto mb-4" />
           <h1 className="text-4xl font-bold mb-2">🏥 Hospital Admin Portal</h1>
           <p className="text-gray-400">Access your hospital's dashboard</p>
         </div>

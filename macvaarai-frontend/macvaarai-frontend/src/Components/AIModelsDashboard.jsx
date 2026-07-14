@@ -14,7 +14,7 @@ const AIModelsDashboard = () => {
   const fetchAllModels = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/admin/available-models');
+      const response = await fetch('${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/available-models');
       const data = await response.json();
 
       if (data.status === 'success' && data.models) {

@@ -213,10 +213,9 @@ const AdminDashboard = () => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
             <img
-              src="http://localhost:8000/LOGO/Macvaar.jpg"
+              src="/logos/Macvaar.jpg"
               alt="MacvaarAI"
               className="h-16 w-16 rounded-full object-cover border-2 border-white shadow-lg"
-              onError={(e) => { e.target.style.display = 'none'; }}
             />
             <div>
               <h1 className="text-3xl font-bold">MacvaarAI Admin Panel</h1>

@@ -443,6 +443,10 @@ const HospitalAdminPortal = ({ onLogout, adminData }) => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo + Hospital Info */}
           <div className="flex items-center gap-6">
+            {/* Macvaar Logo */}
+            <div className="flex-shrink-0">
+              <img src="/logos/Macvaar.jpg" alt="Macvaar AI" className="h-16 w-16 rounded-full object-cover border-4 border-white shadow-lg" />
+            </div>
             {/* Round Logo */}
             <div className="flex-shrink-0">
               {hospital?.logo_url ? (

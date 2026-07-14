@@ -161,4 +161,5 @@ AVAILABLE_MODELS = [
     {"id": "lung", "name": "Lung Disease Detection AI", "premium": True},
     {"id": "onelead", "name": "1-Lead ECG Analysis AI", "premium": True},
     {"id": "twelvelead", "name": "12-Lead ECG Analysis AI", "premium": True},
+    {"id": "vitamind", "name": "Vitamin Deficiency Detection AI", "premium": True},
 ]

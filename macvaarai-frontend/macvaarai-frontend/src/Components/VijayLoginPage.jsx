@@ -14,7 +14,7 @@ const VijayLoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/organization/login', {
+      const response = await fetch('${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/organization/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

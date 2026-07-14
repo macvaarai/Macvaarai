@@ -15,7 +15,7 @@ const Header = () => {
       {/* Left Section */}
       <div>
         <div className="flex items-center space-x-3">
-          <span className="text-4xl">🏥</span>
+          <img src="/logos/Macvaar.jpg" alt="Macvaar AI" className="h-16 w-16 rounded-full border-4 border-blue-400 object-cover" />
           <div>
             <span className="font-bold text-3xl text-blue-400">
               AI Health Platform
@@ -26,7 +26,7 @@ const Header = () => {
       </div>
 
       {/* Right Logo */}
-      {/* Removed logo - using text branding instead */}
+      <img src="/logos/Macvaar.jpg" alt="Macvaar AI" className="h-14 w-14 rounded-full border-4 border-blue-400 object-cover" />
     </div>
   );
 };

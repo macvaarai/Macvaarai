@@ -20,29 +20,29 @@ const OrganizationTokenVerification = () => {
   const organizationData = {
     'vijay': {
       fullName: 'Vijay Care AI',
-      logo: 'http://localhost:8000/LOGO/Vijay.jpeg',
+      logo: '${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/LOGO/Vijay.jpeg',
       color: 'from-yellow-500 to-yellow-700'
     },
     'bjp': {
       fullName: 'BJP Care AI',
-      logo: 'http://localhost:8000/LOGO/BJP.jpeg',
+      logo: '${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/LOGO/BJP.jpeg',
       color: 'from-orange-500 to-orange-700'
     },
     'modi': {
       fullName: 'Modi Healthcare',
-      logo: 'http://localhost:8000/LOGO/Modi.jpeg',
+      logo: '${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/LOGO/Modi.jpeg',
       color: 'from-blue-600 to-blue-800'
     },
     'cbn': {
       fullName: 'CBN Care AI',
-      logo: 'http://localhost:8000/LOGO/CBN.jpg',
+      logo: '${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/LOGO/CBN.jpg',
       color: 'from-yellow-200 to-yellow-400'
     }
   };
 
   const currentOrg = organizationData[orgName.toLowerCase()] || {
     fullName: orgName || 'Organization',
-    logo: 'http://localhost:8000/LOGO/Macvaar.jpg',
+    logo: '${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/LOGO/Macvaar.jpg',
     color: 'from-blue-600 to-blue-800'
   };
 
