@@ -80,7 +80,7 @@ const HospitalManagement = () => {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await fetch('${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/available-models');
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/available-models`);
         const data = await response.json();
         if (data.models) {
           setAllModels(data.models);
@@ -100,7 +100,7 @@ const HospitalManagement = () => {
   const fetchHospitals = async () => {
     try {
       setLoading(true);
-      const response = await fetch('${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/hospitals');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/hospitals`);
       const data = await response.json();
       if (data.status === 'success') {
         setHospitals(data.hospitals || []);
@@ -215,7 +215,7 @@ const HospitalManagement = () => {
         }
       });
 
-      let url = '${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/hospitals';
+      let url = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/hospitals`;
       let method = 'POST';
 
       if (editingId) {

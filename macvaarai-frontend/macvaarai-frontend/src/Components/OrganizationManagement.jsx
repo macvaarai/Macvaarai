@@ -30,7 +30,7 @@ const OrganizationManagement = () => {
     const fetchModels = async () => {
       try {
         console.log('🔄 Fetching models from: http://localhost:8000/admin/available-models');
-        const response = await fetch('${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/available-models');
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/available-models`);
         console.log('Response Status:', response.status);
         const data = await response.json();
         console.log('Models Data:', data);
@@ -60,7 +60,7 @@ const OrganizationManagement = () => {
   const fetchOrganizations = async () => {
     try {
       setLoading(true);
-      const response = await fetch('${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/organizations');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/organizations`);
       const data = await response.json();
       if (data.status === 'success') {
         setOrganizations(data.organizations || []);
@@ -185,7 +185,7 @@ const OrganizationManagement = () => {
         }
       });
 
-      let url = '${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/organizations';
+      let url = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/organizations`;
       let method = 'POST';
 
       if (editingId) {

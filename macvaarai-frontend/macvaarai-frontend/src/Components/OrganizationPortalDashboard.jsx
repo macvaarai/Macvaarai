@@ -161,7 +161,7 @@ const OrganizationPortalDashboard = () => {
                     alt={orgName}
                     className="w-16 h-16 object-contain"
                     onError={(e) => {
-                      e.target.src = '${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/LOGO/Macvaar.jpg';
+                      e.target.src = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/LOGO/Macvaar.jpg`;
                     }}
                   />
                 )}
