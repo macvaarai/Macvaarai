@@ -27,6 +27,14 @@ const VijayCareDashboardComplete = () => {
     return [...heartEntModels, ...otherModels];
   };
 
+  // Sort models for School: Nutrition models on top, then ENT, then others
+  const sortSchoolModels = (models) => {
+    const nutritionModels = models.filter(m => m.name.includes('Vitamin') || m.name.includes('Iron') || m.name.includes('Magnesium'));
+    const entModels = models.filter(m => m.name.includes('Ear') || m.name.includes('Nose'));
+    const otherModels = models.filter(m => !m.name.includes('Vitamin') && !m.name.includes('Iron') && !m.name.includes('Magnesium') && !m.name.includes('Ear') && !m.name.includes('Nose'));
+    return [...nutritionModels, ...entModels, ...otherModels];
+  };
+
   const [hospitalForm, setHospitalForm] = useState({
     name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '',
     admin_name: '', admin_email: '', num_doctors: 0, num_beds: 0, allocated_models: [],
@@ -565,7 +573,7 @@ const VijayCareDashboardComplete = () => {
                 <div>
                   <h3 className="text-lg font-bold text-blue-300 mb-2">📚 SELECT AI MODELS</h3>
                   <div className="grid grid-cols-2 gap-2 bg-gray-700 p-3 rounded border border-gray-600 mb-3">
-                    {sortModelsByPriority(allModels).map(model => (
+                    {sortSchoolModels(allModels).map(model => (
                       <label key={model.id} className="flex items-start gap-2 p-2 bg-gray-800 rounded border border-gray-500 hover:border-blue-500 cursor-pointer transition">
                         <input
                           type="checkbox"
