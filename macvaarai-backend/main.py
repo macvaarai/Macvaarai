@@ -274,6 +274,16 @@ def init_database():
         )
         ''')
 
+        # Insert demo admin user
+        admin_password_hash = bcrypt.hashpw("vijay123".encode('utf-8'), bcrypt.gensalt(rounds=12)).decode('utf-8')
+        try:
+            cursor.execute('''
+            INSERT INTO admin_users (email, password, name, phone, role)
+            VALUES (?, ?, ?, ?, ?)
+            ''', ('admin@vijaycare.com', admin_password_hash, 'Vijay Care Admin', '+91-9999999999', 'super_admin'))
+        except:
+            pass  # Already exists
+
         conn.commit()
         conn.close()
         print(f"[DB] Database initialized successfully: {db_file}")
