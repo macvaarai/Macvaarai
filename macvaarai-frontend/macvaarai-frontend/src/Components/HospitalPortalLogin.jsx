@@ -22,7 +22,7 @@ const HospitalPortalLogin = () => {
 
     try {
       setLoading(true);
-      const response = await fetch('${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/hospital/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/hospital/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginForm)
