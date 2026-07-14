@@ -501,8 +501,8 @@ const VijayCareDashboardComplete = () => {
               <div className="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-blue-500">
                 <div className="grid grid-cols-2 gap-8">
               {/* LEFT SIDE: SCHOOL DETAILS */}
-              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-6 border border-blue-500/30 max-h-96 overflow-y-auto">
-                <div className="space-y-2">
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-4 border border-blue-500/30">
+                <div className="space-y-1">
                   <input type="text" placeholder="School Name" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
                   <div className="grid grid-cols-2 gap-2">
                     <input type="email" placeholder="Email" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
