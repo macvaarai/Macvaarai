@@ -280,10 +280,8 @@ def init_database():
     except Exception as e:
         print(f"[DB ERROR] {str(e)}")
 
-# Initialize database on startup
-@app.on_event("startup")
-async def startup_event():
-    init_database()
+# Initialize database immediately on module load
+init_database()
 
 # Include organization authentication routes
 try:
