@@ -8,12 +8,22 @@ import bcrypt
 import jwt
 from supabase import create_client, Client
 
-# Initialize Supabase
-SUPABASE_URL = os.getenv("SUPABASE_URL")
+# Initialize Supabase (support both SUPABASE_URL and SUPABASE_URI)
+SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("SUPABASE_URI")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET", "your-secret-key-change-in-production")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Lazy initialization of Supabase client
+supabase: Client = None
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("[SUCCESS] Supabase client initialized")
+    except Exception as e:
+        print(f"[WARNING] Failed to initialize Supabase: {str(e)}")
+else:
+    print("[WARNING] SUPABASE_URL or SUPABASE_KEY not set - org_auth will not work")
+
 router = APIRouter(prefix="/api/org-auth", tags=["organization-auth"])
 
 
