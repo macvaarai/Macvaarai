@@ -20,6 +20,7 @@ import OrganizationPortalDashboard from "./Components/OrganizationPortalDashboar
 import OrganizationTokenVerification from "./Components/OrganizationTokenVerification.jsx";
 import VijayCareDashboardComplete from "./Components/VijayCareDashboardComplete.jsx";
 import VijayLoginPage from "./Components/VijayLoginPage.jsx";
+import MasterCheckAILoginPage from "./Components/MasterCheckAILoginPage.jsx";
 import UnifiedCareLogin from "./Components/UnifiedCareLogin.jsx";
 import CarePortalDashboard from "./Components/CarePortalDashboard.jsx";
 
@@ -318,8 +319,8 @@ const App = () => {
           }
         />
 
-        {/* 🔹 MasterCheckAI - Same as Vijay Care */}
-        <Route path="/mastercheckAI/login" element={<VijayLoginPage />} />
+        {/* 🔹 MasterCheckAI - Same as Vijay Care with MasterCheckAI branding */}
+        <Route path="/mastercheckAI/login" element={<MasterCheckAILoginPage />} />
 
         <Route
           path="/mastercheckAI/dashboard"
