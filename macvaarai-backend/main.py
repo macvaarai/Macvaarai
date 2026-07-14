@@ -160,6 +160,131 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Database initialization function
+def init_database():
+    """Initialize SQLite database with all required tables"""
+    db_file = "health_platform.db"
+
+    # Check if database exists
+    if os.path.exists(db_file):
+        print(f"[DB] Database already exists: {db_file}")
+        return
+
+    try:
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+
+        # Create tables
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS admin_users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            name TEXT NOT NULL,
+            phone TEXT,
+            role TEXT DEFAULT 'super_admin',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS organizations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            address TEXT,
+            city TEXT,
+            state TEXT,
+            password TEXT,
+            zip_code TEXT,
+            logo_url TEXT,
+            token TEXT UNIQUE,
+            status TEXT DEFAULT 'active',
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS hospitals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            organization_id INTEGER,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS schools (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            organization_id INTEGER,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS police_org (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            organization_id INTEGER,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS women_org (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            organization_id INTEGER,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS districts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            organization_id INTEGER,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS offices (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            organization_id INTEGER,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        conn.commit()
+        conn.close()
+        print(f"[DB] Database initialized successfully: {db_file}")
+    except Exception as e:
+        print(f"[DB ERROR] {str(e)}")
+
+# Initialize database on startup
+@app.on_event("startup")
+async def startup_event():
+    init_database()
+
 # Include organization authentication routes
 try:
     from app.routes.org_auth import router as org_auth_router
