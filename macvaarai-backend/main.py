@@ -37,6 +37,7 @@ from enum import Enum
 # from langdetect import detect
 import sqlite3
 import json
+import bcrypt
 
 from pydantic import BaseModel
 from typing import Optional, Union, Literal, List
@@ -725,19 +726,26 @@ class UserRequest(BaseModel):
 
 @app.post("/admin/login")
 async def admin_login(request: Request):
-    """Admin authentication - NEW SYSTEM"""
+    """Admin authentication with bcrypt password verification"""
     try:
         data = await request.json()
-        email = data.get("email", "")
-        password = data.get("password", "")
+        email = data.get("email", "").strip()
+        password = data.get("password", "").strip()
+
+        if not email or not password:
+            return {"status": "error", "message": "Email and password required"}
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, email, password, name, role FROM admin_users WHERE email = ? AND password = ?", (email, password))
+        cursor.execute("SELECT id, email, password, name, role FROM admin_users WHERE email = ?", (email,))
         admin = cursor.fetchone()
         conn.close()
 
-        if admin:
+        if not admin:
+            return {"status": "error", "message": "Invalid credentials"}
+
+        # Verify password using bcrypt
+        if bcrypt.checkpw(password.encode('utf-8'), admin["password"].encode('utf-8')):
             return {
                 "status": "success",
                 "admin_id": admin["id"],
@@ -746,6 +754,7 @@ async def admin_login(request: Request):
                 "role": admin["role"],
                 "message": f"Welcome {admin['name']}"
             }
+
         return {"status": "error", "message": "Invalid credentials"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
