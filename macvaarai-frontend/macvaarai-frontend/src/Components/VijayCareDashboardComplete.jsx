@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut, Plus, Trash2, Edit2, Copy, CheckCircle, Building2, Users, BarChart3, Settings, Zap } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ModelDiagnosticChatbot from './ModelDiagnosticChatbotClean';
 import StaffManagement from './StaffManagement';
 import { AI_MODELS } from '../data/models';
@@ -85,7 +85,9 @@ const VijayCareDashboardComplete = () => {
 
   const apiUrl = 'http://localhost:8000';
   const navigate = useNavigate();
-  const orgName = 'Vijay Care AI';
+  const location = useLocation();
+  const isMasterCheckAI = location.pathname.includes('mastercheckAI');
+  const orgName = isMasterCheckAI ? 'MasterCheck AI' : 'Vijay Care AI';
   const orgToken = localStorage.getItem('orgToken') || 'ORG_VIJAY_CARE_6E1455EE';
   const allModels = AI_MODELS;
 
@@ -214,7 +216,11 @@ const VijayCareDashboardComplete = () => {
     localStorage.removeItem('orgToken');
     localStorage.removeItem('vijayToken');
     localStorage.removeItem('vijayOrgName');
-    navigate('/');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminName');
+    localStorage.removeItem('adminRole');
+    const loginPath = isMasterCheckAI ? '/mastercheckAI/login' : '/vijay-care/login';
+    navigate(loginPath);
   };
 
   if (loading) {
@@ -234,7 +240,7 @@ const VijayCareDashboardComplete = () => {
             <div className="flex items-center gap-4">
               <img src="/logos/Vijay.jpeg" alt="Vijay Care Logo" className="h-16 w-16 rounded-full border-4 border-yellow-500 object-cover" />
               <div>
-                <h1 className="text-4xl font-bold text-yellow-400">VIJAY CARE AI</h1>
+                <h1 className="text-4xl font-bold text-yellow-400">{orgName.toUpperCase()}</h1>
                 <p className="text-yellow-300">AI-Driven Early Disease Detection & Identification</p>
               </div>
             </div>
@@ -244,6 +250,7 @@ const VijayCareDashboardComplete = () => {
                 <div className="text-right">
                   <p className="text-xs text-yellow-300">Powered by</p>
                   <p className="text-sm font-bold text-yellow-400">MacvaarAI</p>
+                  <button onClick={handleLogout} className="text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded mt-1 transition">Logout</button>
                 </div>
               </div>
             </div>
