@@ -569,10 +569,9 @@ const VijayCareDashboardComplete = () => {
               </div>
 
               {/* RIGHT SIDE: AI MODELS & HEALTH CONDITIONS */}
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-3">
                 <div>
-                  <h3 className="text-lg font-bold text-blue-300 mb-2">📚 SELECT AI MODELS</h3>
-                  <div className="grid grid-cols-2 gap-2 bg-gray-700 p-3 rounded border border-gray-600 mb-3">
+                  <div className="grid grid-cols-3 gap-2 mb-4">
                     {sortSchoolModels(allModels).map(model => (
                       <label key={model.id} className="flex items-start gap-2 p-2 bg-gray-800 rounded border border-gray-500 hover:border-blue-500 cursor-pointer transition">
                         <input
