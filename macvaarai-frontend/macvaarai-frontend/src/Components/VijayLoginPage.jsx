@@ -14,7 +14,7 @@ const VijayLoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/organization/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -23,11 +23,11 @@ const VijayLoginPage = () => {
       const data = await response.json();
 
       if (data.status === 'success') {
-        localStorage.setItem('vijayToken', email);
-        localStorage.setItem('vijayOrgName', data.org_name);
-        localStorage.setItem('orgToken', email);
-        localStorage.setItem('orgName', data.org_name);
-        localStorage.setItem('orgId', data.org_id);
+        localStorage.setItem('vijayToken', data.admin_id);
+        localStorage.setItem('vijayOrgName', data.name);
+        localStorage.setItem('adminToken', data.admin_id);
+        localStorage.setItem('adminName', data.name);
+        localStorage.setItem('adminRole', data.role);
         navigate('/vijay-care/dashboard');
       } else {
         setError(data.message || 'Invalid credentials');
