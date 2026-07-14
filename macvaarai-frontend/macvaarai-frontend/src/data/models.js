@@ -18,9 +18,9 @@ export const AI_MODELS = [
   { id: 'lung', name: 'Lungs AI', icon: '🫁', price: '$$$', description: 'Screen for respiratory conditions and get lung health insights using AI.' },
   { id: 'onelead', name: 'Heart AI 1 Lead', icon: '❤️', price: '$$$', description: 'Quick ECG analysis using a single-lead input for early heart health screening.' },
   { id: 'twelvelead', name: 'Heart AI 12 Lead', icon: '❤️', price: '$$$', description: 'Comprehensive 12-lead ECG interpretation for advanced cardiac assessment.' },
-  { id: 'vitamind', name: 'Vitamin D Deficiency AI', icon: '🥗', price: '$$$', description: 'Detect and assess vitamin D deficiency symptoms with AI-powered nutrition screening.' },
-  { id: 'iron', name: 'Iron Deficiency AI', icon: '⚙️', price: '$$$', description: 'Screen for iron deficiency anemia and receive nutritional guidance.' },
-  { id: 'magnesium', name: 'Magnesium Deficiency AI', icon: '💊', price: '$$$', description: 'Assess magnesium deficiency symptoms and get dietary recommendations.' }
+  { id: 'vitamind', name: 'Vitamin D Deficiency AI', icon: '', price: '$$$', description: 'Detect and assess vitamin D deficiency symptoms with AI-powered nutrition screening.' },
+  { id: 'iron', name: 'Iron Deficiency AI', icon: '', price: '$$$', description: 'Screen for iron deficiency anemia and receive nutritional guidance.' },
+  { id: 'magnesium', name: 'Magnesium Deficiency AI', icon: '', price: '$$$', description: 'Assess magnesium deficiency symptoms and get dietary recommendations.' }
 ];
 
 // Get model by ID
