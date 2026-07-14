@@ -502,69 +502,27 @@ const VijayCareDashboardComplete = () => {
                 <div className="grid grid-cols-2 gap-8">
               {/* LEFT SIDE: SCHOOL DETAILS */}
               <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-6 border border-blue-500/30 max-h-96 overflow-y-auto">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-blue-600 p-2 rounded-lg">
-                    <span className="text-lg">📝</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-blue-300">School Details</h3>
-                </div>
                 <div className="space-y-2">
-                  <div>
-                    <label className="block text-blue-300 text-xs font-semibold mb-1">School Name *</label>
-                    <input type="text" placeholder="Enter school name" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                  </div>
+                  <input type="text" placeholder="School Name" value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
                   <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-blue-300 text-xs font-semibold mb-1">Email *</label>
-                      <input type="email" placeholder="Email" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                    </div>
-                    <div>
-                      <label className="block text-blue-300 text-xs font-semibold mb-1">Phone *</label>
-                      <input type="tel" placeholder="Phone" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                    </div>
+                    <input type="email" placeholder="Email" value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                    <input type="tel" placeholder="Phone" value={partnerForm.phone} onChange={(e) => setPartnerForm({...partnerForm, phone: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
                   </div>
-                  <div>
-                    <label className="block text-blue-300 text-xs font-semibold mb-1">Address *</label>
-                    <input type="text" placeholder="Full address" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                  </div>
+                  <input type="text" placeholder="Address" value={partnerForm.address} onChange={(e) => setPartnerForm({...partnerForm, address: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
                   <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-blue-300 text-xs font-semibold mb-1">City</label>
-                      <input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                    </div>
-                    <div>
-                      <label className="block text-blue-300 text-xs font-semibold mb-1">State</label>
-                      <input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                    </div>
-                    <div>
-                      <label className="block text-blue-300 text-xs font-semibold mb-1">Students</label>
-                      <input type="number" placeholder="0" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                    </div>
+                    <input type="text" placeholder="City" value={partnerForm.city} onChange={(e) => setPartnerForm({...partnerForm, city: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                    <input type="text" placeholder="State" value={partnerForm.state} onChange={(e) => setPartnerForm({...partnerForm, state: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                    <input type="number" placeholder="Students" value={partnerForm.members} onChange={(e) => setPartnerForm({...partnerForm, members: parseInt(e.target.value) || 0})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
                   </div>
-                  <div>
-                    <label className="block text-blue-300 text-xs font-semibold mb-1">Principal/Contact Name</label>
-                    <input type="text" placeholder="Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                  </div>
-                  <div>
-                    <label className="block text-blue-300 text-sm font-semibold mb-2">Contact Email</label>
-                    <input type="email" placeholder="Contact email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 text-white focus:border-blue-500 focus:outline-none transition" />
-                  </div>
+                  <input type="text" placeholder="Principal/Contact Name" value={partnerForm.contact_name} onChange={(e) => setPartnerForm({...partnerForm, contact_name: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                  <input type="email" placeholder="Contact Email" value={partnerForm.contact_email} onChange={(e) => setPartnerForm({...partnerForm, contact_email: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
                   <div className="border-t border-gray-600 pt-3 mt-3">
-                    <p className="text-blue-300 text-sm font-semibold mb-3">🔐 Dashboard Login</p>
                     <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-blue-300 text-xs font-semibold mb-1">Username *</label>
-                        <input type="text" placeholder="Username" value={partnerForm.username} onChange={(e) => setPartnerForm({...partnerForm, username: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                      </div>
-                      <div>
-                        <label className="block text-blue-300 text-xs font-semibold mb-1">Password *</label>
-                        <input type="password" placeholder="Password" value={partnerForm.password} onChange={(e) => setPartnerForm({...partnerForm, password: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
-                      </div>
+                      <input type="text" placeholder="Username" value={partnerForm.username} onChange={(e) => setPartnerForm({...partnerForm, username: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
+                      <input type="password" placeholder="Password" value={partnerForm.password} onChange={(e) => setPartnerForm({...partnerForm, password: e.target.value})} className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white text-sm focus:border-blue-500 focus:outline-none transition" />
                     </div>
                   </div>
-                  <div className="pt-4">
-                    <button onClick={() => {if(editingSchoolId) {const updatedSchools = schools.map(s => s.id === editingSchoolId ? {...partnerForm, id: editingSchoolId} : s); setSchools(updatedSchools); setEditingSchoolId(null);} else {setSchools([...schools, {...partnerForm, id: Date.now()}]); } setShowSchoolForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: [], username: '', password: '', vitaminDeficiency: false, ironDeficiency: false, magnesiumDeficiency: false, calciumDeficiency: false, proteinMalnutrition: false, stunting: false, wasting: false, anemia: false, rickets: false, diarrhea: false, respiratoryInfection: false, typhoid: false, measles: false, polio: false});}} className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-bold">{editingSchoolId ? 'Update' : 'Add'} School</button>
-                  </div>
+                  <button onClick={() => {if(editingSchoolId) {const updatedSchools = schools.map(s => s.id === editingSchoolId ? {...partnerForm, id: editingSchoolId} : s); setSchools(updatedSchools); setEditingSchoolId(null);} else {setSchools([...schools, {...partnerForm, id: Date.now()}]); } setShowSchoolForm(false); setPartnerForm({name: '', email: '', phone: '', address: '', city: '', state: '', zip_code: '', contact_name: '', contact_email: '', members: 0, allocated_models: [], username: '', password: '', vitaminDeficiency: false, ironDeficiency: false, magnesiumDeficiency: false, calciumDeficiency: false, proteinMalnutrition: false, stunting: false, wasting: false, anemia: false, rickets: false, diarrhea: false, respiratoryInfection: false, typhoid: false, measles: false, polio: false});}} className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-bold">{editingSchoolId ? 'Update' : 'Add'} School</button>
                 </div>
               </div>
 
