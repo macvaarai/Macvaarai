@@ -318,6 +318,18 @@ const App = () => {
           }
         />
 
+        {/* 🔹 MasterCheckAI - Same as Vijay Care */}
+        <Route path="/mastercheckAI/login" element={<VijayLoginPage />} />
+
+        <Route
+          path="/mastercheckAI/dashboard"
+          element={
+            <VijayCareDashboardWrapper>
+              <VijayCareDashboardComplete />
+            </VijayCareDashboardWrapper>
+          }
+        />
+
         {/* Modi Care AI Organization - Orange */}
         <Route
           path="/modi-care/login"
