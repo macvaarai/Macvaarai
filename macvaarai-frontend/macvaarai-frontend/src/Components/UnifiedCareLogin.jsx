@@ -9,6 +9,7 @@ const UnifiedCareLogin = () => {
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -58,18 +59,20 @@ const UnifiedCareLogin = () => {
       {/* Left Corner Logo - Vijay */}
       <div className="absolute top-8 left-8 z-20">
         <img
-          src="/logos/Vijay.jpeg"
+          src={`${apiUrl}/LOGO/Vijay.jpeg`}
           alt="Vijay Care"
           className="h-24 w-24 rounded-full shadow-lg border-4 border-white object-cover hover:scale-110 transition transform"
+          onError={(e) => { e.target.style.display = 'none'; }}
         />
       </div>
 
       {/* Right Corner Logo - Macvaar */}
       <div className="absolute top-8 right-8 z-20">
         <img
-          src="/logos/Macvaar.jpg"
+          src={`${apiUrl}/LOGO/Macvaar.jpg`}
           alt="Macvaar AI"
           className="h-24 w-24 rounded-full shadow-lg border-4 border-white object-cover hover:scale-110 transition transform"
+          onError={(e) => { e.target.style.display = 'none'; }}
         />
       </div>
 
