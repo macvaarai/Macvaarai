@@ -21,8 +21,11 @@ import OrganizationTokenVerification from "./Components/OrganizationTokenVerific
 import VijayCareDashboardComplete from "./Components/VijayCareDashboardComplete.jsx";
 import VijayLoginPage from "./Components/VijayLoginPage.jsx";
 import MasterCheckAILoginPage from "./Components/MasterCheckAILoginPage.jsx";
+import MasterCheckAIDashboard from "./Components/MasterCheckAIDashboard.jsx";
 import UnifiedCareLogin from "./Components/UnifiedCareLogin.jsx";
 import CarePortalDashboard from "./Components/CarePortalDashboard.jsx";
+import About from "./Components/About.jsx";
+import ContactUs from "./Components/ContactUs.jsx";
 
 const HospitalAdminWrapper = ({ children }) => {
   const role = localStorage.getItem("adminRole");
@@ -319,17 +322,19 @@ const App = () => {
           }
         />
 
-        {/* 🔹 MasterCheckAI - Same as Vijay Care with MasterCheckAI branding */}
+        {/* 🔹 MasterCheckAI - New dashboard with all 16 modules */}
         <Route path="/mastercheckAI/login" element={<MasterCheckAILoginPage />} />
 
         <Route
           path="/mastercheckAI/dashboard"
           element={
-            <VijayCareDashboardWrapper>
-              <VijayCareDashboardComplete />
-            </VijayCareDashboardWrapper>
+            <MasterCheckAIDashboard />
           }
         />
+
+        {/* 🔹 About and Contact Us Pages */}
+        <Route path="/about" element={<About />} />
+        <Route path="/contact-us" element={<ContactUs />} />
 
         {/* Modi Care AI Organization - Orange */}
         <Route
