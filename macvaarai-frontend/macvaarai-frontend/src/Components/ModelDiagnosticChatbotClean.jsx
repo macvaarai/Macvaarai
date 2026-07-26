@@ -226,8 +226,8 @@ const ModelDiagnosticChatbot = ({ model, onClose }) => {
       {/* BOTTOM INPUT - ChatGPT Style */}
       <div className="bg-gradient-to-t from-gray-950 to-transparent p-4 pb-6 border-t border-gray-800">
         <div className="max-w-3xl mx-auto">
-          {/* Image Preview */}
-          {imagePreview && messages.length > 0 && (
+          {/* Image Preview - Show immediately when uploaded */}
+          {imagePreview && (
             <div className="mb-4 flex gap-3 items-center bg-gray-800/30 p-3 rounded-lg">
               <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded" />
               <div className="flex-1"><p className="text-gray-400 text-sm">{imageFile?.name || 'Image URL'}</p></div>
