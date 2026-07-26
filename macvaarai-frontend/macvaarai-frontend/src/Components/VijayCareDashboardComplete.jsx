@@ -83,7 +83,7 @@ const VijayCareDashboardComplete = () => {
     respiratoryInfection: false, typhoid: false, measles: false, polio: false
   });
 
-  const apiUrl = 'http://localhost:8000';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   const navigate = useNavigate();
   const location = useLocation();
   const isMasterCheckAI = location.pathname.includes('mastercheckAI');

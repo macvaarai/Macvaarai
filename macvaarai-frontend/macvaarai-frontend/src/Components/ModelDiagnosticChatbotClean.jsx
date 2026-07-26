@@ -111,12 +111,14 @@ const ModelDiagnosticChatbot = ({ model, onClose }) => {
         formData.append('patient_name', 'Patient');
         formData.append('patient_age', '0');
 
-        response = await fetch(`http://localhost:8000/api/v1/diagnose/complete`, {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        response = await fetch(`${apiUrl}/api/v1/diagnose/complete`, {
           method: 'POST',
           body: formData
         });
       } else {
-        response = await fetch(`http://localhost:8000/api/v1/diagnose/complete`, {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        response = await fetch(`${apiUrl}/api/v1/diagnose/complete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image_url: imagePreview, model_type: modelId, patient_name: 'Patient', patient_age: '0' })

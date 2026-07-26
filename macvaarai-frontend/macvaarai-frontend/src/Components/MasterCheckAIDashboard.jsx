@@ -32,7 +32,7 @@ const MasterCheckAIDashboard = () => {
     }
   };
 
-  const apiUrl = 'http://localhost:8000';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   const navigate = useNavigate();
   const allModels = AI_MODELS;
   const orgName = 'MASTERCHECK AI';
