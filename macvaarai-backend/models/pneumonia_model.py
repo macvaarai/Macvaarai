@@ -4,7 +4,7 @@ import tensorflow as tf
 from PIL import Image
 import io
 
-MODEL_PATH = "model_storage/pneumonia_classification_model.h5"
+MODEL_PATH = "model_storage/pneumonia_model.h5"
 
 # Load model once
 model = tf.keras.models.load_model(MODEL_PATH)
