@@ -4811,61 +4811,70 @@ async def complete_diagnosis_with_report(
 
         # Get diagnosis using the actual model file
         try:
-            if model_type == "eye":
-                from models.eye_model import predict_eye
-                result = predict_eye(image_bytes)
-            elif model_type == "covid":
-                from models.covid_model import predict_covid
-                result = predict_covid(image_bytes)
-            elif model_type == "pneumonia":
-                from models.pneumonia_model import predict_pneumonia
-                result = predict_pneumonia(image_bytes)
-            elif model_type == "skin":
-                from models.skin_model import predict_skin
-                result = predict_skin(image_bytes)
-            elif model_type == "malaria":
-                from models.malaria_model import predict_malaria
-                result = predict_malaria(image_bytes)
-            elif model_type == "dengue":
-                from models.dengue_model import predict_dengue
-                result = predict_dengue(image_bytes)
-            elif model_type == "diabetes":
-                from models.diabetes_model import predict_diabetes
-                result = predict_diabetes(image_bytes)
-            elif model_type == "ear":
-                from models.ear_model import predict_ear
-                result = predict_ear(image_bytes)
-            elif model_type == "nose":
-                from models.nose_model import predict_nose
-                result = predict_nose(image_bytes)
-            elif model_type == "throat":
-                from models.throat_model import predict_throat
-                result = predict_throat(image_bytes)
-            elif model_type == "oral":
-                from models.oral_model import predict_oral
-                result = predict_oral(image_bytes)
-            elif model_type == "pharyngitis":
-                from models.pharyngitis_model import predict_pharyngitis
-                result = predict_pharyngitis(image_bytes)
-            elif model_type == "colorectal":
-                from models.colorectal_model import predict_colorectal
-                result = predict_colorectal(image_bytes)
-            elif model_type == "lung":
-                from models.lung_model import predict_lung
-                result = predict_lung(image_bytes)
-            elif model_type == "onelead":
-                from models.onelead_model import predict_onelead
-                result = predict_onelead(image_bytes)
-            elif model_type == "twelvelead":
-                from models.twelvelead_model import predict_twelvelead
-                result = predict_twelvelead(image_bytes)
+            result = None
+            model_source = "Real Model"
+            try:
+                if model_type == "eye":
+                    from models.eye_model import predict_eye
+                    result = predict_eye(image_bytes)
+                elif model_type == "covid":
+                    from models.covid_model import predict_covid
+                    result = predict_covid(image_bytes)
+                elif model_type == "pneumonia":
+                    from models.pneumonia_model import predict_pneumonia
+                    result = predict_pneumonia(image_bytes)
+                elif model_type == "skin":
+                    from models.skin_model import predict_skin
+                    result = predict_skin(image_bytes)
+                elif model_type == "malaria":
+                    from models.malaria_model import predict_malaria
+                    result = predict_malaria(image_bytes)
+                elif model_type == "dengue":
+                    from models.dengue_model import predict_dengue
+                    result = predict_dengue(image_bytes)
+                elif model_type == "diabetes":
+                    from models.diabetes_model import predict_diabetes
+                    result = predict_diabetes(image_bytes)
+                elif model_type == "ear":
+                    from models.ear_model import predict_ear
+                    result = predict_ear(image_bytes)
+                elif model_type == "nose":
+                    from models.nose_model import predict_nose
+                    result = predict_nose(image_bytes)
+                elif model_type == "throat":
+                    from models.throat_model import predict_throat
+                    result = predict_throat(image_bytes)
+                elif model_type == "oral":
+                    from models.oral_model import predict_oral
+                    result = predict_oral(image_bytes)
+                elif model_type == "pharyngitis":
+                    from models.pharyngitis_model import predict_pharyngitis
+                    result = predict_pharyngitis(image_bytes)
+                elif model_type == "colorectal":
+                    from models.colorectal_model import predict_colorectal
+                    result = predict_colorectal(image_bytes)
+                elif model_type == "lung":
+                    from models.lung_model import predict_lung
+                    result = predict_lung(image_bytes)
+                elif model_type == "onelead":
+                    from models.onelead_model import predict_onelead
+                    result = predict_onelead(image_bytes)
+                elif model_type == "twelvelead":
+                    from models.twelvelead_model import predict_twelvelead
+                    result = predict_twelvelead(image_bytes)
+            except ImportError:
+                model_source = "Mock Model (Test Mode)"
+                predict_func = getattr(__import__('models.mock_models', fromlist=[f'predict_{model_type}']), f'predict_{model_type}')
+                result = predict_func(image_bytes)
 
-            # Format diagnosis from model result
+            if result is None:
+                raise ValueError(f"No prediction result for {model_type}")
+
             diagnosis = {
                 'label': result.get('label', 'Unknown'),
                 'confidence': result.get('confidence', 0),
                 'confidence_percent': f"{result.get('confidence', 0)*100:.1f}%",
-                'api_used': f'{model_type.upper()} Model (.h5)',
+                'api_used': f'{model_type.upper()} {model_source}',
                 'all_predictions': result.get('all_predictions', {})
             }
         except Exception as model_error:
