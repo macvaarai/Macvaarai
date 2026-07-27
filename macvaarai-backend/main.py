@@ -4004,25 +4004,9 @@ async def hospital_feedback(hospital_id: str, request: dict):
 import sys
 sys.path.insert(0, "models")
 
-# Import all models
-try:
-    from models.covid_model import predict_covid, COVID_LABELS
-    from models.eye_model import predict_eye, EYE_LABELS
-    from models.pneumonia_model import predict_pneumonia
-    from models.malaria_model import predict_malaria
-    from models.skin_model import predict_skin
-    from models.dengue_model import predict_dengue
-    from models.diabetes_model import predict_diabetes
-    from models.ear_model import predict_ear
-    from models.nose_model import predict_nose
-    from models.throat_model import predict_throat
-    from models.pharyngitis_model import predict_pharyngitis
-    from models.oral_model import predict_oral
-    from models.onelead_model import predict_onelead
-    from models.twelvelead_model import predict_twelvelead
-    from models.lung_model import predict_lung
-except Exception as e:
-    print(f"[WARNING] Could not import all models: {e}")
+# Models are imported on-demand in diagnose endpoint (lazy loading)
+# This comment keeps all model code available without loading at startup
+# Reduces memory usage on startup while keeping full functionality
 
 @app.get("/api/available-models")
 async def get_available_models():
