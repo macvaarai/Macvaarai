@@ -1,71 +1,75 @@
-"""Mock models with actual trained model labels"""
+"""Mock models with actual trained model labels - returns random predictions"""
 import random
 
-MOCK_PREDICTIONS = {
-    "ear": {
-        "label": "Normal",
-        "confidence": 0.87,
-        "all_predictions": {
-            "Acute Otitis Media": 0.06,
-            "Chronic Otitis Media": 0.07,
-            "Normal": 0.87
-        }
-    },
-    "nose": {
-        "label": "Normal",
-        "confidence": 0.85,
-        "all_predictions": {
-            "Nasal Polyp": 0.15,
-            "Normal": 0.85
-        }
-    },
-    "throat": {
-        "label": "Non Cancer",
-        "confidence": 0.91,
-        "all_predictions": {
-            "Cancer": 0.09,
-            "Non Cancer": 0.91
-        }
-    },
-    "onelead": {
-        "label": "Normal Heartbeat",
-        "confidence": 0.92,
-        "all_predictions": {
-            "Normal Heartbeat": 0.92,
-            "Supraventricular Heartbeat": 0.04,
-            "Ventricular Heartbeat": 0.02,
-            "Fusion Heartbeat": 0.01,
-            "Unidentified Beat": 0.01
-        }
-    },
-    "twelvelead": {
-        "label": "Normal ECG",
-        "confidence": 0.94,
-        "all_predictions": {
-            "Normal ECG": 0.94,
-            "Myocardial Infarction": 0.02,
-            "ST-T Abnormality": 0.02,
-            "Conduction Abnormality": 0.01,
-            "Arrhythmia": 0.01,
-            "Other": 0.00
-        }
-    },
-}
+def get_ear_prediction():
+    labels = ["Acute Otitis Media", "Chronic Otitis Media", "Normal"]
+    idx = random.randint(0, 2)
+    confs = [random.uniform(0.70, 0.95), random.uniform(0.01, 0.20), random.uniform(0.01, 0.20)]
+    confs[idx] = random.uniform(0.75, 0.95)
+    return {
+        "label": labels[idx],
+        "confidence": confs[idx],
+        "all_predictions": {labels[i]: confs[i] for i in range(3)}
+    }
+
+def get_nose_prediction():
+    labels = ["Nasal Polyp", "Normal"]
+    idx = random.randint(0, 1)
+    confs = [random.uniform(0.70, 0.90), random.uniform(0.70, 0.90)]
+    confs[idx] = random.uniform(0.80, 0.95)
+    return {
+        "label": labels[idx],
+        "confidence": confs[idx],
+        "all_predictions": {labels[i]: confs[i] for i in range(2)}
+    }
+
+def get_throat_prediction():
+    labels = ["Cancer", "Non Cancer"]
+    idx = random.randint(0, 1)
+    confs = [random.uniform(0.70, 0.90), random.uniform(0.70, 0.90)]
+    confs[idx] = random.uniform(0.80, 0.95)
+    return {
+        "label": labels[idx],
+        "confidence": confs[idx],
+        "all_predictions": {labels[i]: confs[i] for i in range(2)}
+    }
+
+def get_onelead_prediction():
+    labels = ["Normal Heartbeat", "Supraventricular Heartbeat", "Ventricular Heartbeat", "Fusion Heartbeat", "Unidentified Beat"]
+    idx = random.randint(0, 4)
+    confs = [random.uniform(0.10, 0.30) for _ in range(5)]
+    confs[idx] = random.uniform(0.60, 0.95)
+    return {
+        "label": labels[idx],
+        "confidence": confs[idx],
+        "all_predictions": {labels[i]: confs[i] for i in range(5)}
+    }
+
+def get_twelvelead_prediction():
+    labels = ["Normal ECG", "Myocardial Infarction", "ST-T Abnormality", "Conduction Abnormality", "Arrhythmia", "Other"]
+    idx = random.randint(0, 5)
+    confs = [random.uniform(0.05, 0.25) for _ in range(6)]
+    confs[idx] = random.uniform(0.70, 0.95)
+    return {
+        "label": labels[idx],
+        "confidence": confs[idx],
+        "all_predictions": {labels[i]: confs[i] for i in range(6)}
+    }
 
 def predict_ear(image_bytes):
-    return MOCK_PREDICTIONS["ear"]
+    return get_ear_prediction()
 
 def predict_nose(image_bytes):
-    return MOCK_PREDICTIONS["nose"]
+    return get_nose_prediction()
 
 def predict_throat(image_bytes):
-    return MOCK_PREDICTIONS["throat"]
+    return get_throat_prediction()
 
 def predict_onelead(image_bytes):
-    return MOCK_PREDICTIONS["onelead"]
+    return get_onelead_prediction()
 
 def predict_twelvelead(image_bytes):
-    return MOCK_PREDICTIONS["twelvelead"]
+    return get_twelvelead_prediction()
 
 # Placeholder stubs for other models (not focused on now)
 def predict_eye(image_bytes):
