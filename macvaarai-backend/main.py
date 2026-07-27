@@ -4012,17 +4012,14 @@ try:
     from models.malaria_model import predict_malaria
     from models.skin_model import predict_skin
     from models.dengue_model import predict_dengue
-    from models.diabetes_model import predict_diabetes
+    # Keep only ENT + Heart ECG models (reduce memory usage)
     from models.ear_model import predict_ear
     from models.nose_model import predict_nose
     from models.throat_model import predict_throat
-    from models.pharyngitis_model import predict_pharyngitis
-    from models.oral_model import predict_oral
     from models.onelead_model import predict_onelead
     from models.twelvelead_model import predict_twelvelead
-    from models.lung_model import predict_lung
 except Exception as e:
-    print(f"[WARNING] Could not import all models: {e}")
+    print(f"[WARNING] Could not import ENT/Heart models: {e}")
 
 @app.get("/api/available-models")
 async def get_available_models():
@@ -4782,21 +4779,11 @@ async def complete_diagnosis_with_report(
     try:
         print(f"[DEBUG] Received model_type: {model_type}")
         # Available models with BOTH .py and .h5 files (16 models total: 14 image + 2 ECG)
+        # Focus on ENT + Heart ECG models only (memory optimized)
         AVAILABLE_MODELS = {
-            "eye": "models.eye_model",
-            "covid": "models.covid_model",
-            "pneumonia": "models.pneumonia_model",
-            "skin": "models.skin_model",
-            "malaria": "models.malaria_model",
-            "dengue": "models.dengue_model",
-            "diabetes": "models.diabetes_model",
             "ear": "models.ear_model",
             "nose": "models.nose_model",
             "throat": "models.throat_model",
-            "oral": "models.oral_model",
-            "pharyngitis": "models.pharyngitis_model",
-            "colorectal": "models.colorectal_model",
-            "lung": "models.lung_model",
             "onelead": "models.onelead_model",
             "twelvelead": "models.twelvelead_model"
         }
@@ -4814,28 +4801,8 @@ async def complete_diagnosis_with_report(
             result = None
             model_source = "Real Model"
             try:
-                if model_type == "eye":
-                    from models.eye_model import predict_eye
-                    result = predict_eye(image_bytes)
-                elif model_type == "covid":
-                    from models.covid_model import predict_covid
-                    result = predict_covid(image_bytes)
-                elif model_type == "pneumonia":
-                    from models.pneumonia_model import predict_pneumonia
-                    result = predict_pneumonia(image_bytes)
-                elif model_type == "skin":
-                    from models.skin_model import predict_skin
-                    result = predict_skin(image_bytes)
-                elif model_type == "malaria":
-                    from models.malaria_model import predict_malaria
-                    result = predict_malaria(image_bytes)
-                elif model_type == "dengue":
-                    from models.dengue_model import predict_dengue
-                    result = predict_dengue(image_bytes)
-                elif model_type == "diabetes":
-                    from models.diabetes_model import predict_diabetes
-                    result = predict_diabetes(image_bytes)
-                elif model_type == "ear":
+                # ENT + Heart ECG models only
+                if model_type == "ear":
                     from models.ear_model import predict_ear
                     result = predict_ear(image_bytes)
                 elif model_type == "nose":
@@ -4844,18 +4811,6 @@ async def complete_diagnosis_with_report(
                 elif model_type == "throat":
                     from models.throat_model import predict_throat
                     result = predict_throat(image_bytes)
-                elif model_type == "oral":
-                    from models.oral_model import predict_oral
-                    result = predict_oral(image_bytes)
-                elif model_type == "pharyngitis":
-                    from models.pharyngitis_model import predict_pharyngitis
-                    result = predict_pharyngitis(image_bytes)
-                elif model_type == "colorectal":
-                    from models.colorectal_model import predict_colorectal
-                    result = predict_colorectal(image_bytes)
-                elif model_type == "lung":
-                    from models.lung_model import predict_lung
-                    result = predict_lung(image_bytes)
                 elif model_type == "onelead":
                     from models.onelead_model import predict_onelead
                     result = predict_onelead(image_bytes)
