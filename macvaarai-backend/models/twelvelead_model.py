@@ -60,7 +60,7 @@ except Exception as e:
 
 def preprocess_twelvelead_image(image_bytes):
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    image = image.resize((224, 224))  # Match model input size
+    image = image.resize((128, 128))  # Match TFLite model input size
     image_array = np.array(image).astype(np.float32) / 255.0
     input_array = np.expand_dims(image_array, axis=0)
     return input_array
