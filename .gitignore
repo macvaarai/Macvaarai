@@ -1,11 +1,6 @@
-# Model files - too large for GitHub
-model_storage/
-macvaarai-backend/model_storage/
+# Model files tracked by git-lfs (see .gitattributes)
 *.safetensors
-*.pth
-*.h5
 *.bin
-*.tflite
 *.keras
 *.pkl
 
