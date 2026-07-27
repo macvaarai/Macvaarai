@@ -28,7 +28,8 @@ def predict_ear(image_bytes):
 
     all_predictions = {}
     for i, label in enumerate(EAR_LABELS):
-        all_predictions[label] = float(prediction[0][i])
+        if i < len(prediction[0]):
+            all_predictions[label] = float(prediction[0][i])
 
     return {
         "label": EAR_LABELS[idx],
@@ -36,16 +37,4 @@ def predict_ear(image_bytes):
         "confidence_percent": f"{confidence*100:.1f}%",
         "all_predictions": all_predictions,
         "summary": f"Ear condition: {EAR_LABELS[idx]}"
-    }
-
-    with torch.no_grad():
-        outputs = model(input_tensor)
-        probs = torch.softmax(outputs, dim=1)[0]
-        top_idx = torch.argmax(probs).item()
-        confidence = probs[top_idx].item()
-
-    return {
-        "label": EAR_LABELS[top_idx],
-        "confidence": float(confidence),
-        "summary": f"Ear diagnosis: {EAR_LABELS[top_idx]} ({confidence*100:.2f}%)"
     }
