@@ -217,33 +217,6 @@ const DiagnosisResultsPage = ({ diagnosis, model, imagePreview, onClose, current
             </div>
           </div>
 
-          {/* ANALYSIS BREAKDOWN */}
-          <div className="mb-8 pb-6 border-b-2 border-gray-400">
-            <p className="text-lg font-bold text-gray-800 mb-4">Analysis Breakdown</p>
-            <div className="space-y-3">
-              {diagnosis.all_predictions &&
-                Object.entries(diagnosis.all_predictions)
-                  .sort(([, a], [, b]) => b - a)
-                  .slice(0, 5)
-                  .map(([label, score], idx) => (
-                    <div key={label} className="flex items-center gap-4">
-                      <span className={`font-bold text-sm px-3 py-1 rounded min-w-fit ${
-                        idx === 0 ? 'bg-green-600 text-white' : 'bg-gray-300 text-black'
-                      }`}>
-                        #{idx + 1}
-                      </span>
-                      <span className="text-gray-800 flex-1 font-semibold">{label}</span>
-                      <span className="text-gray-800 font-bold min-w-fit">{(score * 100).toFixed(1)}%</span>
-                      <div className="w-40 bg-gray-300 border border-gray-400 h-3 overflow-hidden">
-                        <div
-                          className="bg-blue-600 h-full"
-                          style={{ width: `${score * 100}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
-            </div>
-          </div>
 
           {/* CLINICAL REPORT & RECOMMENDATIONS */}
           <div className="py-6 border-b-2 border-gray-400">
