@@ -23,18 +23,23 @@ def preprocess_ear_image(image_bytes):
 def predict_ear(image_bytes):
     input_array = preprocess_ear_image(image_bytes)
     prediction = model.predict(input_array)
-    idx = np.argmax(prediction)
-    confidence = float(prediction[0][idx])
 
+    # Handle actual model output size (may be 2 or 3 classes)
+    num_classes = len(prediction[0])
+    idx = np.argmax(prediction)
+
+    # Use only available labels
+    active_labels = EAR_LABELS[:num_classes] if num_classes <= len(EAR_LABELS) else EAR_LABELS
+
+    confidence = float(prediction[0][idx])
     all_predictions = {}
-    for i, label in enumerate(EAR_LABELS):
-        if i < len(prediction[0]):
-            all_predictions[label] = float(prediction[0][i])
+    for i, label in enumerate(active_labels):
+        all_predictions[label] = float(prediction[0][i])
 
     return {
-        "label": EAR_LABELS[idx],
+        "label": active_labels[idx] if idx < len(active_labels) else "Unknown",
         "confidence": confidence,
         "confidence_percent": f"{confidence*100:.1f}%",
         "all_predictions": all_predictions,
-        "summary": f"Ear condition: {EAR_LABELS[idx]}"
+        "summary": f"Ear condition: {active_labels[idx] if idx < len(active_labels) else 'Unknown'}"
     }
