@@ -84,10 +84,10 @@ const DiagnosisResultsPage = ({ diagnosis, model, imagePreview, onClose, current
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl my-2 mx-2 sm:mx-4 sm:my-4">
-        {/* HEADER */}
-        <div className={`${theme.headerGradient} text-white p-3 sm:p-6 flex justify-between items-center`}>
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col">
+        {/* HEADER - STICKY */}
+        <div className={`${theme.headerGradient} text-white p-3 sm:p-6 flex justify-between items-center sticky top-0 z-10`}>
           <div className="flex items-center gap-2 sm:gap-3 flex-1">
             <button
               onClick={() => navigate(-1)}
