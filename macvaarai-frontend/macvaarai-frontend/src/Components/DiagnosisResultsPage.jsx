@@ -173,13 +173,13 @@ const DiagnosisResultsPage = ({ diagnosis, model, imagePreview, onClose, current
           {/* IMAGE & RESULTS - RESPONSIVE STACK */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-12 mb-6 md:mb-8 pb-4 md:pb-6 border-b-2 border-gray-400">
             {/* LEFT: IMAGE */}
-            <div>
+            <div className="flex flex-col">
               <p className="text-base sm:text-lg font-bold text-gray-800 mb-2 sm:mb-4">Medical Image</p>
-              <div className="border-2 border-gray-400 p-2 sm:p-4 bg-gray-50">
+              <div className="border-2 border-gray-400 p-2 sm:p-4 bg-gray-50 flex-grow flex items-center justify-center">
                 {displayImage ? (
-                  <img src={displayImage} alt="Medical" className="w-full h-auto object-contain max-h-60 sm:max-h-96" />
+                  <img src={displayImage} alt="Medical" className="w-full h-auto object-contain max-h-80 sm:max-h-[500px] md:max-h-[600px]" />
                 ) : (
-                  <div className="h-48 sm:h-80 flex items-center justify-center bg-gray-200">
+                  <div className="h-64 sm:h-96 flex items-center justify-center bg-gray-200 w-full">
                     <p className="text-gray-500 text-sm font-semibold">No Image</p>
                   </div>
                 )}
