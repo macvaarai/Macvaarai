@@ -1,13 +1,8 @@
 import os
-import torch
-import torch.nn.functional as F
+import numpy as np
+import tensorflow as tf
 from PIL import Image
 import io
-import numpy as np
-from torchvision import transforms, models
-from torch.serialization import add_safe_globals
-
-add_safe_globals([models.mobilenetv2.MobileNetV2])
 
 SKIN_AI_LABELS = [
     "Actinic Keratoses (akiec)",
@@ -19,60 +14,48 @@ SKIN_AI_LABELS = [
     "Vascular Lesions (vasc)"
 ]
 
+# Load model - try .h5 first
+print("Loading skin model...")
+model = None
+for path in ["model_storage/skin_model.h5", "model_storage/skin_model.pth"]:
+    if os.path.exists(path):
+        try:
+            model = tf.keras.models.load_model(path)
+            print(f"✅ Skin model loaded from {path}")
+            break
+        except:
+            continue
+if model is None:
+    print("⚠️ Skin model not found")
 
-device = torch.device("cpu")
-model_path = "model_storage/skin_model.pth"
-
-def create_skin_model():
-    """Create skin cancer detection model using MobileNetV2"""
-    model = models.mobilenetv2(weights='DEFAULT')
-    # Replace final layer to match number of classes
-    model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, len(SKIN_AI_LABELS))
-    return model
-
-try:
-    if os.path.exists(model_path):
-        # Explicitly set weights_only=False to load full model
-        model = torch.load(model_path, map_location=device, weights_only=False)
-    else:
-        print("[INFO] Creating skin cancer model with transfer learning...")
-        model = create_skin_model()
-except Exception as e:
-    print(f"[WARNING] Skin model error: {e}, creating new model...")
-    model = create_skin_model()
-
-model.eval()
-
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                         std=[0.229, 0.224, 0.225])
-])
 
 def preprocess_skin_image(image_bytes):
-    """Convert uploaded image bytes into a normalized tensor"""
+    """Convert uploaded image bytes into a normalized array"""
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    return transform(image).unsqueeze(0)
+    image = image.resize((224, 224))
+    image_array = np.array(image).astype(np.float32) / 255.0
+    return np.expand_dims(image_array, axis=0)
+
 
 def predict_skin(image_bytes):
     """Run inference and return label + confidence + all predictions"""
-    input_tensor = preprocess_skin_image(image_bytes)
+    if model is None:
+        return {"label": "Model not available", "confidence": 0.0, "all_predictions": {}, "summary": "Skin model failed to load"}
 
-    with torch.no_grad():
-        outputs = model(input_tensor)
-        probs = F.softmax(outputs, dim=1)
-        idx = torch.argmax(probs, dim=1).item()
-        confidence = probs[0][idx].item()
+    input_array = preprocess_skin_image(image_bytes)
+    prediction = model.predict(input_array)
 
-    # Create all_predictions dictionary
-    all_predictions = {}
-    for i, label in enumerate(SKIN_AI_LABELS):
-        all_predictions[label] = float(probs[0][i].item())
+    # Handle actual model output size
+    num_classes = len(prediction[0])
+    idx = np.argmax(prediction)
+    active_labels = SKIN_AI_LABELS[:num_classes] if num_classes <= len(SKIN_AI_LABELS) else SKIN_AI_LABELS
+
+    confidence = float(prediction[0][idx])
+    all_predictions = {label: float(prediction[0][i]) for i, label in enumerate(active_labels)}
 
     return {
-        "label": SKIN_AI_LABELS[idx],
-        "confidence": float(confidence),
+        "label": active_labels[idx] if idx < len(active_labels) else "Unknown",
+        "confidence": confidence,
         "all_predictions": all_predictions,
-        "summary": f"Skin diagnosis: {SKIN_AI_LABELS[idx]} ({confidence*100:.2f}%)"
+        "summary": f"Skin diagnosis: {active_labels[idx] if idx < len(active_labels) else 'Unknown'} ({confidence*100:.2f}%)"
     }
