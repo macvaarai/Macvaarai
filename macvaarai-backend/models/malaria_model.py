@@ -7,8 +7,19 @@ import io
 # Labels for binary classification
 MALARIA_LABELS = ["Infected (Parasitized)", "Uninfected"]
 
-# Load the model once
-model = tf.keras.models.load_model("model_storage/malaria_model.keras")
+# Load model - try .keras first, then .h5
+print("Loading malaria model...")
+model = None
+for path in ["model_storage/malaria_model.keras", "model_storage/malaria_model.h5"]:
+    if os.path.exists(path):
+        try:
+            model = tf.keras.models.load_model(path)
+            print(f"✅ Malaria model loaded from {path}")
+            break
+        except:
+            continue
+if model is None:
+    print("⚠️ Malaria model not found")
 
 def preprocess_malaria_image(image_bytes):
     """
@@ -25,6 +36,9 @@ def predict_malaria(image_bytes):
     Predict malaria infection status from an image.
     Returns label, confidence, all predictions, and a readable summary.
     """
+    if model is None:
+        return {"label": "Model not available", "confidence": 0.0, "all_predictions": {}, "summary": "Malaria model failed to load"}
+
     input_array = preprocess_malaria_image(image_bytes)
     prediction = model.predict(input_array)[0][0]
 
