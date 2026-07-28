@@ -200,7 +200,7 @@ export const WORKING_MODELS = [
   { id: 'throat', name: 'Throat AI', icon: '🗣️', price: '$$$', description: 'Assess throat symptoms and receive tailored advice for throat health.' },
 
   // SKIN AI (Priority 3)
-  { id: 'skin-ai', name: 'Skin AI', icon: '🩹', price: '$$$', description: 'Dermatology analysis for skin cancer detection and skin lesion classification.' },
+  { id: 'skin', name: 'Skin AI', icon: '🩹', price: '$$$', description: 'Dermatology analysis for skin cancer detection and skin lesion classification.' },
 
   // OTHER MODELS
   { id: 'eye', name: 'Eye AI', icon: '👁️', price: '$$$', description: 'Screen vision health and detect eye-related issues using AI.' },
