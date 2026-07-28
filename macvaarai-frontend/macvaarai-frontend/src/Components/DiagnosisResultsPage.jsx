@@ -103,9 +103,9 @@ const DiagnosisResultsPage = ({ diagnosis, model, imagePreview, onClose, current
           </div>
           <div className="flex gap-1 sm:gap-3 items-center flex-shrink-0">
             <button
-              onClick={() => navigate('/')}
+              onClick={onClose}
               className="text-white hover:bg-white hover:bg-opacity-20 p-1 sm:p-2 rounded transition"
-              title="Go to Home"
+              title="Return to Model Upload"
             >
               <Home size={18} className="sm:w-6 sm:h-6" />
             </button>
@@ -132,7 +132,7 @@ const DiagnosisResultsPage = ({ diagnosis, model, imagePreview, onClose, current
             <button
               onClick={downloadReport}
               disabled={downloadingReport}
-              className={`bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 sm:px-6 py-2 rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-base transition shadow-lg disabled:opacity-50`}
+              className={`bg-black hover:bg-gray-800 text-white font-bold px-3 sm:px-6 py-2 rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-base transition shadow-lg disabled:opacity-50`}
               title="Download report as PDF"
             >
               {downloadingReport ? (
@@ -293,12 +293,12 @@ const DiagnosisResultsPage = ({ diagnosis, model, imagePreview, onClose, current
             <div className="bg-white p-3 sm:p-6 rounded-lg border-2 border-blue-600">
               <p className="text-sm sm:text-base font-bold text-gray-800 mb-2 sm:mb-4">Selected: {selectedConsultation}</p>
               <div className="flex flex-col sm:flex-row gap-2">
-                <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 sm:py-3 px-3 sm:px-6 rounded-lg transition text-sm sm:text-base">
+                <button className="flex-1 bg-black hover:bg-gray-800 text-white font-bold py-2 sm:py-3 px-3 sm:px-6 rounded-lg transition text-sm sm:text-base">
                   📞 Proceed to Booking
                 </button>
                 <button
                   onClick={() => setSelectedConsultation(null)}
-                  className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 sm:py-3 px-3 sm:px-6 rounded-lg transition text-sm sm:text-base"
+                  className="flex-1 bg-black hover:bg-gray-800 text-white font-bold py-2 sm:py-3 px-3 sm:px-6 rounded-lg transition text-sm sm:text-base"
                 >
                   ✕ Cancel
                 </button>
@@ -309,7 +309,7 @@ const DiagnosisResultsPage = ({ diagnosis, model, imagePreview, onClose, current
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 sm:py-4 px-3 sm:px-6 rounded-lg transition text-sm sm:text-base"
+              className="flex-1 bg-black hover:bg-gray-800 text-white font-bold py-2 sm:py-4 px-3 sm:px-6 rounded-lg transition text-sm sm:text-base"
             >
               ✕ Close
             </button>
