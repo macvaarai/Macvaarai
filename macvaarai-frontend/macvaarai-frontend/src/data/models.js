@@ -63,6 +63,7 @@ export const AI_MODELS = [
   { id: 'infectious-disease-school', name: 'Infectious Disease AI', icon: '🦠', module: 'school', description: 'COVID, Dengue, Malaria, Typhoid, Influenza, Measles' },
   { id: 'mental-wellness-school', name: 'Mental Wellness AI', icon: '🧠', module: 'school', description: 'Anxiety, Depression, ADHD, Autism, Learning Disability' },
   { id: 'lifestyle-school', name: 'Lifestyle AI', icon: '🏃', module: 'school', description: 'Obesity, Sleep, Physical Activity' },
+  { id: 'skin-school', name: 'Skin AI', icon: '🩹', module: 'school', description: 'Skin cancer detection and skin lesion classification' },
 
   // PHC AI
   { id: 'village-screening', name: 'Village Screening AI', icon: '🌾', module: 'phc', description: 'Village health camps' },
@@ -121,9 +122,12 @@ export const AI_MODELS = [
   { id: 'cancer-emp', name: 'Cancer AI', icon: '🔬', module: 'employee', description: 'Cancer risk assessment' },
 
   // MOBILE MEDICAL VAN AI
-  { id: 'remote-ecg', name: 'Remote ECG AI', icon: '❤️', module: 'mobile-van', description: 'Mobile cardiac screening' },
+  { id: 'remote-ecg', name: 'Remote ECG AI (1-Lead & 12-Lead)', icon: '❤️', module: 'mobile-van', description: 'Mobile cardiac screening with ECG analysis' },
+  { id: 'remote-ear', name: 'Remote Ear AI', icon: '👂', module: 'mobile-van', description: 'Mobile ear condition screening' },
+  { id: 'remote-nose', name: 'Remote Nose AI', icon: '👃', module: 'mobile-van', description: 'Mobile nasal health screening' },
+  { id: 'remote-throat', name: 'Remote Throat AI', icon: '🗣️', module: 'mobile-van', description: 'Mobile throat condition screening' },
   { id: 'remote-ent', name: 'Remote ENT AI', icon: '👂', module: 'mobile-van', description: 'Mobile ENT services' },
-  { id: 'remote-skin', name: 'Remote Skin AI', icon: '🩹', module: 'mobile-van', description: 'Dermatology services' },
+  { id: 'remote-skin', name: 'Remote Skin AI', icon: '🩹', module: 'mobile-van', description: 'Dermatology and skin cancer screening' },
   { id: 'remote-eye', name: 'Remote Eye AI', icon: '👁️', module: 'mobile-van', description: 'Optometry services' },
   { id: 'remote-oral', name: 'Remote Oral AI', icon: '🦷', module: 'mobile-van', description: 'Dental screening' },
   { id: 'remote-cancer', name: 'Remote Cancer AI', icon: '🔬', module: 'mobile-van', description: 'Cancer screening' },
@@ -183,24 +187,32 @@ export const AI_MODELS = [
   { id: 'billing', name: 'Billing AI', icon: '💰', module: 'marketplace', description: 'Invoice and payment management' }
 ];
 
-// 18 Main Working AI Models for the Models Dashboard Section
+// 24 Main Working AI Models for the Models Dashboard Section
+// Heart and ENT models are prioritized at the top
 export const WORKING_MODELS = [
-  { id: 'eye', name: 'Eye AI', icon: '👁️', price: '$$$', description: 'Screen vision health and detect eye-related issues using AI.' },
-  { id: 'covid', name: 'COVID-19 AI', icon: '🦠', price: '$$$', description: 'Chest X-ray analysis and COVID-19 screening using machine learning.' },
-  { id: 'pneumonia', name: 'Pneumonia AI', icon: '🫁', price: '$$$', description: 'Screen and detect early pneumonia risks with AI.' },
-  { id: 'skin', name: 'Dental AI', icon: '🦷', price: '$$$', description: 'Dental health checks, cavity detection, and oral hygiene tips powered by AI.' },
-  { id: 'malaria', name: 'Malaria AI', icon: '🦟', price: '$$$', description: 'Screen for malaria symptoms and provide early advice.' },
-  { id: 'dengue', name: 'Dengue AI', icon: '🦟', price: '$$$', description: 'Screen for dengue symptoms and provide AI-driven advice.' },
-  { id: 'diabetes', name: 'Diabetes AI', icon: '💉', price: '$$$', description: 'Monitor glucose trends, risk factors, and receive diabetic care advice.' },
+  // HEART & ECG (Priority 1)
+  { id: 'onelead', name: 'Heart AI 1 Lead', icon: '❤️', price: '$$$', description: 'Quick ECG analysis using a single-lead input for early heart health screening.' },
+  { id: 'twelvelead', name: 'Heart AI 12 Lead', icon: '❤️', price: '$$$', description: 'Comprehensive 12-lead ECG interpretation for advanced cardiac assessment.' },
+
+  // ENT (Priority 2)
   { id: 'ear', name: 'Ear AI', icon: '👂', price: '$$$', description: 'Screen for common ear issues and receive hearing health suggestions.' },
   { id: 'nose', name: 'Nose AI', icon: '👃', price: '$$$', description: 'AI-driven nasal health checks for allergies, congestion, and sinus care.' },
   { id: 'throat', name: 'Throat AI', icon: '🗣️', price: '$$$', description: 'Assess throat symptoms and receive tailored advice for throat health.' },
+
+  // SKIN AI (Priority 3)
+  { id: 'skin-ai', name: 'Skin AI', icon: '🩹', price: '$$$', description: 'Dermatology analysis for skin cancer detection and skin lesion classification.' },
+
+  // OTHER MODELS
+  { id: 'eye', name: 'Eye AI', icon: '👁️', price: '$$$', description: 'Screen vision health and detect eye-related issues using AI.' },
+  { id: 'covid', name: 'COVID-19 AI', icon: '🦠', price: '$$$', description: 'Chest X-ray analysis and COVID-19 screening using machine learning.' },
+  { id: 'pneumonia', name: 'Pneumonia AI', icon: '🫁', price: '$$$', description: 'Screen and detect early pneumonia risks with AI.' },
+  { id: 'malaria', name: 'Malaria AI', icon: '🦟', price: '$$$', description: 'Screen for malaria symptoms and provide early advice.' },
+  { id: 'dengue', name: 'Dengue AI', icon: '🦟', price: '$$$', description: 'Screen for dengue symptoms and provide AI-driven advice.' },
+  { id: 'diabetes', name: 'Diabetes AI', icon: '💉', price: '$$$', description: 'Monitor glucose trends, risk factors, and receive diabetic care advice.' },
   { id: 'oral', name: 'Oral AI', icon: '🦷', price: '$$$', description: 'Screen oral hygiene, gum disease, and mouth health with AI.' },
   { id: 'pharyngitis', name: 'Pharyngitis AI', icon: '🗣️', price: '$$$', description: 'Assess throat symptoms and receive tailored advice for pharyngitis.' },
   { id: 'colorectal', name: 'Colorectal AI', icon: '🔬', price: '$$$', description: 'Identify colorectal polyps and abnormalities with AI analysis.' },
   { id: 'lung', name: 'Lungs AI', icon: '🫁', price: '$$$', description: 'Screen for respiratory conditions and get lung health insights using AI.' },
-  { id: 'onelead', name: 'Heart AI 1 Lead', icon: '❤️', price: '$$$', description: 'Quick ECG analysis using a single-lead input for early heart health screening.' },
-  { id: 'twelvelead', name: 'Heart AI 12 Lead', icon: '❤️', price: '$$$', description: 'Comprehensive 12-lead ECG interpretation for advanced cardiac assessment.' },
   { id: 'vitamind', name: 'Vitamin D Deficiency AI', icon: '🥗', price: '$$$', description: 'Detect and assess vitamin D deficiency symptoms with AI-powered nutrition screening.' },
   { id: 'iron', name: 'Iron Deficiency AI', icon: '🩸', price: '$$$', description: 'Screen for iron deficiency anemia and receive nutritional guidance.' }
 ];
