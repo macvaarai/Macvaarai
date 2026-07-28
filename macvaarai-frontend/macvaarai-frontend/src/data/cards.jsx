@@ -15,11 +15,11 @@ export const cards = [
     shadowGlow: "shadow-pink-400/40",
     bigImage: "/images/heart-12.png"
   },
-  { 
-    path: "skin-ai", 
-    title: "Skin AI", 
-    description: "Analyze skin conditions, rashes, and moles for early detection and advice.", 
-    icon: "🧴", 
+  {
+    path: "skin",
+    title: "Skin AI",
+    description: "Analyze skin conditions, rashes, and moles for early detection and advice.",
+    icon: "🧴",
     shadowGlow: "shadow-yellow-400/40",
     bigImage: "/images/skin.png"
   },

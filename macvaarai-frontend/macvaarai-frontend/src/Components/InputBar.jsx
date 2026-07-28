@@ -21,6 +21,7 @@ const InputBar = ({ isAiResponding, addMessage, updateMessage }) => {
       case "heart-ai-1-lead": return "onelead";
       case "heart-ai-12-lead": return "twelvelead";
       case "skin-ai": return "skin";
+      case "skin": return "skin";
       case "eye-ai": return "eye";
       case "lungs-ai": return "lung";
       case "ear-ai": return "ear";
